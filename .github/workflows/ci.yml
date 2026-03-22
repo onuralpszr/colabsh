@@ -80,3 +80,26 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: junit.xml
+
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install zensical and mkdocstrings
+        run: uv tool install zensical --with mkdocstrings-python
+
+      - name: Install project (for mkdocstrings)
+        run: uv sync
+
+      - name: Build docs (strict)
+        run: zensical build --strict
