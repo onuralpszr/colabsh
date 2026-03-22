@@ -17,6 +17,7 @@
 [![coverage](https://codecov.io/gh/onuralpszr/colabsh/graph/badge.svg)](https://codecov.io/gh/onuralpszr/colabsh)
 [![Release](https://img.shields.io/github/v/release/onuralpszr/colabsh)](https://github.com/onuralpszr/colabsh/releases)
 [![Dependabot Updates](https://github.com/onuralpszr/colabsh/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/onuralpszr/colabsh/actions/workflows/dependabot/dependabot-updates)
+[![CodeFactor](https://www.codefactor.io/repository/github/onuralpszr/colabsh/badge/main)](https://www.codefactor.io/repository/github/onuralpszr/colabsh/overview/main)
 
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/onuralpszr/colabsh/main.svg)](https://results.pre-commit.ci/latest/github/onuralpszr/colabsh/main)
 [![autofix enabled](https://shields.io/badge/autofix.ci-yes-success?logo=autofix-ci)](https://autofix.ci)
