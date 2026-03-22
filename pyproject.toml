@@ -1,0 +1,136 @@
+[project]
+name = "colabsh"
+dynamic = ["version"]
+description = "CLI tool for Google Colab - execute code and interact with Colab from the terminal"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "Osman Sezer" }]
+keywords = ["google", "colab", "cli", "jupyter", "notebook"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development",
+    "Typing :: Typed",
+]
+dependencies = [
+    "click>=8.1.0",
+    "pydantic>=2.12.3,<3.0.0",
+    "websockets>=15.0.1",
+]
+
+[project.urls]
+Documentation = "https://github.com/onuralpszr/colabsh#readme"
+Issues = "https://github.com/onuralpszr/colabsh/issues"
+Source = "https://github.com/onuralpszr/colabsh"
+
+[tool.hatch.version]
+path = "src/colabsh/__about__.py"
+
+[project.optional-dependencies]
+qr = ["qrcode>=8.0"]
+
+
+[project.scripts]
+colabsh = "colabsh.main:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/colabsh"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.3",
+    "mypy>=1.15.0",
+    "pre-commit>=4.0.0",
+]
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+extension = { mdx = "markdown", qmd = "markdown" }
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "RUF",  # ruff-specific rules
+
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["colabsh"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# Mypy configuration
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=colabsh --cov-report=term-missing --cov-report=html --cov-fail-under=85"
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["colabsh"]
+branch = true
+omit = [
+    "*/proxy.py",
+    "*/server.py",
+    "*/commands.py",
+    "*/repl.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 85
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+    "if TYPE_CHECKING:",
+]
+exclude_also = [
+    "pass",
+]
