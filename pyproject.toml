@@ -66,7 +66,8 @@ url = "https://pypi.org/simple"
 [tool.ruff]
 target-version = "py310"
 line-length = 100
-extension = { mdx = "markdown", qmd = "markdown" }
+# Bug https://github.com/astral-sh/ruff/issues/23858
+# extension = { mdx = "markdown", qmd = "markdown" }
 
 [tool.ruff.lint]
 select = [

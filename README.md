@@ -1,6 +1,9 @@
 # colabsh
 
-A CLI tool for Google Colab. Execute code, download notebooks, and interact with Google Colab from the terminal.
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/onuralpszr/colabsh/main.svg)](https://results.pre-commit.ci/latest/github/onuralpszr/colabsh/main)
+
+A CLI tool for Google Colab. Execute code, download notebooks, and interact with
+Google Colab from the terminal.
 
 Connects to Google Colab through your browser via WebSocket no API keys needed.
 
@@ -88,7 +91,8 @@ colabsh repl               # Interactive REPL
 
 - **Arrow keys** navigate previous commands (readline history)
 - **Persistent history** saved across sessions
-- **Multiline input**: lines ending with `:` or `\` start a block (end with empty line)
+- **Multiline input**: lines ending with `:` or `\` start a block (end with
+  empty line)
 - **Commands**: `/quit`, `/tools`, `/cells`
 
 ### Download
@@ -110,13 +114,15 @@ colabsh --json status      # JSON output (for scripting/LLM tools)
 
 ## Headless Mode
 
-For SSH sessions, containers, or remote machines where there's no desktop browser:
+For SSH sessions, containers, or remote machines where there's no desktop
+browser:
 
 ```bash
 colabsh start --headless
 ```
 
-This prints the connection URL instead of opening a browser. Open the URL on the same machine in any browser.
+This prints the connection URL instead of opening a browser. Open the URL on the
+same machine in any browser.
 
 ### SSH Port Forwarding
 
@@ -139,9 +145,13 @@ colabsh exec "print('running on remote')"
 
 ### Why Not LAN/Phone Access?
 
-Google Colab's frontend JavaScript **always connects WebSocket to `localhost`** — this is hardcoded in Google's code. When you open the URL on a different device (phone, another computer), the browser tries to connect to `localhost` on that device, which doesn't have the colabsh server.
+Google Colab's frontend JavaScript **always connects WebSocket to `localhost`**
+— this is hardcoded in Google's code. When you open the URL on a different
+device (phone, another computer), the browser tries to connect to `localhost` on
+that device, which doesn't have the colabsh server.
 
-The only way to use colabsh from a different machine is **SSH port forwarding**, which makes the remote port appear as `localhost` on your local machine.
+The only way to use colabsh from a different machine is **SSH port forwarding**,
+which makes the remote port appear as `localhost` on your local machine.
 
 ## Security
 
@@ -157,7 +167,8 @@ The only way to use colabsh from a different machine is **SSH port forwarding**,
 - The connection URL contains a secret token treat it like a password
 - Anyone with the URL can execute code in your Colab session
 - The background server runs until you stop it (`colabsh stop`)
-- Code execution happens on Google's Colab VMs, subject to Google's terms of service
+- Code execution happens on Google's Colab VMs, subject to Google's terms of
+  service
 - The Google Colab session has your Google account's permissions
 
 ### Token lifecycle
@@ -170,11 +181,11 @@ The only way to use colabsh from a different machine is **SSH port forwarding**,
 
 All data is stored locally:
 
-| Platform | Path |
-|----------|------|
-| Linux | `~/.config/colabsh/` |
-| macOS | `~/Library/Application Support/colabsh/` |
-| Windows | `C:\Users\<user>\AppData\Roaming\colabsh\` |
+| Platform | Path                                       |
+| -------- | ------------------------------------------ |
+| Linux    | `~/.config/colabsh/`                       |
+| macOS    | `~/Library/Application Support/colabsh/`   |
+| Windows  | `C:\Users\<user>\AppData\Roaming\colabsh\` |
 
 Files:
 

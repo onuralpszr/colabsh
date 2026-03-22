@@ -1,6 +1,7 @@
 # Contributing to colabsh
 
-Thank you for your interest in contributing to colabsh! This guide will help you get started.
+Thank you for your interest in contributing to colabsh! This guide will help you
+get started.
 
 ## Development Setup
 
@@ -64,7 +65,9 @@ uv run pre-commit run --all-files
 
 ## Commit Messages
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/). Changelog generation with [git-cliff](https://git-cliff.org/) depends on this format.
+This project follows
+[Conventional Commits](https://www.conventionalcommits.org/). Changelog
+generation with [git-cliff](https://git-cliff.org/) depends on this format.
 
 ### Format
 
@@ -75,7 +78,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 ### Types
 
 | Type       | Description                          |
-|------------|--------------------------------------|
+| ---------- | ------------------------------------ |
 | `feat`     | A new feature                        |
 | `fix`      | A bug fix                            |
 | `docs`     | Documentation changes                |
@@ -141,4 +144,5 @@ tests/
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [Apache License 2.0](LICENSE).
+By contributing, you agree that your contributions will be licensed under the
+[Apache License 2.0](LICENSE).
