@@ -188,7 +188,7 @@ colabsh exec "print('running on remote')"
 - Runs a **localhost-only** WebSocket server — not accessible from the network
 - Uses a random **authentication token** for every session
 - Communicates with Google Colab via Google's MCP proxy protocol
-- Stores data locally in `~/.config/colabsh/` — nothing is sent to third parties
+- Stores data locally in your [config directory](#config-directory) — nothing is sent to third parties
 
 ### What to be aware of
 
