@@ -63,13 +63,52 @@ NOTEBOOK_KERNEL_DISPLAY = "Python 3"
 NOTEBOOK_DEFAULT_PYTHON = "3.12.0"
 NOTEBOOK_DEFAULT_OUTPUT = "notebook.py"
 
+# --- Reconnection ---
+RECONNECT_MAX_RETRIES = 3
+HEALTH_CHECK_TIMEOUT = 15.0  # seconds
+HEALTH_CHECK_CODE = "\n".join(
+    [
+        "import json, os, subprocess",
+        "info = {'has_gpu': os.path.exists('/dev/nvidia0'), 'gpu_name': ''}",
+        "try:",
+        "    r = subprocess.run(",
+        "        ['nvidia-smi', '--query-gpu=name', '--format=csv,noheader'],",
+        "        capture_output=True, text=True, timeout=5,",
+        "    )",
+        "    if r.returncode == 0:",
+        "        info['gpu_name'] = r.stdout.strip()",
+        "except Exception:",
+        "    pass",
+        "print(json.dumps(info))",
+    ]
+)
+
+# --- GPU / Runtime Type ---
+# Labels must match the exact radio button text in Colab's "Change runtime type" dialog
+GPU_TYPES: dict[str, str] = {
+    "cpu": "None (CPU)",
+    "t4": "T4 GPU",
+    "a100": "A100 GPU",
+    "v100": "v100 GPU",
+    "l4": "L4 GPU",
+    "tpu": "TPU v2",
+}
+GPU_CHOICES = list(GPU_TYPES.keys())
+RUNTIME_DIALOG_TIMEOUT = 10_000  # milliseconds
+
 # --- Playwright / Auto-connect ---
 BROWSER_PROFILE_DIR = "browser-profile"
 PLAYWRIGHT_NAV_TIMEOUT = 30_000  # milliseconds, page navigation
 PLAYWRIGHT_ACCEPT_TIMEOUT = 30_000  # milliseconds, wait for accept button
-# Colab MCP dialog: "Cancel" and "Connect" buttons
-MCP_ACCEPT_BUTTON_SELECTOR = "button"
-MCP_ACCEPT_BUTTON_TEXT = "Connect"
+MCP_ACCEPT_BUTTON_TEXT = "Connect"  # Colab MCP dialog accept button
+
+# Common Chrome launch args shared by auto_connect and login
+CHROME_ARGS = [
+    "--disable-blink-features=AutomationControlled",
+    "--no-first-run",
+    "--no-default-browser-check",
+]
+
 
 # --- QR Code ---
 QR_VERSION = 1

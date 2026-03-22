@@ -10,6 +10,7 @@ from colabsh.core.config import (
     save_settings,
     set_setting,
 )
+from colabsh.core.models import Settings
 
 
 class TestConfigPaths:
@@ -54,7 +55,9 @@ class TestSettings:
     def test_load_settings_no_file(self, tmp_path: Path) -> None:
         with patch("colabsh.core.config.SETTINGS_PATH", tmp_path / "nonexistent.json"):
             result = load_settings()
-        assert result == {}
+        assert isinstance(result, Settings)
+        assert result.headless is False
+        assert result.history_enabled is True
 
     def test_save_and_load_settings(self, tmp_path: Path) -> None:
         settings_path = tmp_path / "settings.json"
@@ -65,16 +68,18 @@ class TestSettings:
         config.SETTINGS_PATH = settings_path
         config.CONFIG_DIR = tmp_path
         try:
-            save_settings({"key": "value", "number": 42})
+            settings = Settings(headless=True, auto=True)
+            save_settings(settings)
             result = load_settings()
-            assert result == {"key": "value", "number": 42}
+            assert result.headless is True
+            assert result.auto is True
         finally:
             config.SETTINGS_PATH = original_settings
             config.CONFIG_DIR = original_dir
 
     def test_get_setting_default(self, tmp_path: Path) -> None:
         with patch("colabsh.core.config.SETTINGS_PATH", tmp_path / "nonexistent.json"):
-            assert get_setting("missing") is None
+            assert get_setting("headless") is False
             assert get_setting("missing", "default") == "default"
 
     def test_set_and_get_setting(self, tmp_path: Path) -> None:
@@ -86,11 +91,11 @@ class TestSettings:
         config.SETTINGS_PATH = settings_path
         config.CONFIG_DIR = tmp_path
         try:
-            set_setting("theme", "dark")
-            assert get_setting("theme") == "dark"
+            set_setting("headless", True)
+            assert get_setting("headless") is True
 
-            set_setting("theme", "light")
-            assert get_setting("theme") == "light"
+            set_setting("headless", False)
+            assert get_setting("headless") is False
         finally:
             config.SETTINGS_PATH = original_settings
             config.CONFIG_DIR = original_dir
