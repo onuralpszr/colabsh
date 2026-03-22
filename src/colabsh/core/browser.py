@@ -15,10 +15,13 @@ from typing import Any
 
 from colabsh.constants import (
     BROWSER_PROFILE_DIR,
+    CHROME_ARGS,
     COLAB_URL,
+    GPU_TYPES,
     MCP_ACCEPT_BUTTON_TEXT,
     PLAYWRIGHT_ACCEPT_TIMEOUT,
     PLAYWRIGHT_NAV_TIMEOUT,
+    RUNTIME_DIALOG_TIMEOUT,
 )
 from colabsh.core.config import CONFIG_DIR
 
@@ -30,7 +33,7 @@ def is_playwright_available() -> bool:
         `True` if the `playwright` package is installed.
     """
     try:
-        import playwright.async_api  # type: ignore[import-not-found]  # noqa: F401
+        import playwright.async_api  # noqa: F401
 
         return True
     except ImportError:
@@ -99,11 +102,7 @@ async def auto_connect(url: str, *, headless: bool = True, user_data_dir: str | 
             str(profile_path),
             headless=headless,
             channel="chrome",
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--no-first-run",
-                "--no-default-browser-check",
-            ],
+            args=CHROME_ARGS,
         )
     except Exception as e:
         await pw.stop()
@@ -155,7 +154,7 @@ async def auto_connect(url: str, *, headless: bool = True, user_data_dir: str | 
             logging.warning("Accept button not found and screenshot failed: %s", screenshot_err)
 
     # Store references to prevent garbage collection
-    page._pw_instance = pw
+    page._pw_instance = pw  # type: ignore[attr-defined]
 
     return page
 
@@ -190,11 +189,7 @@ async def login(*, headless: bool = False) -> None:
         str(user_data_dir),
         headless=headless,
         channel="chrome",
-        args=[
-            "--no-first-run",
-            "--no-default-browser-check",
-            "--disable-blink-features=AutomationControlled",
-        ],
+        args=CHROME_ARGS,
     )
 
     page = context.pages[0] if context.pages else await context.new_page()
@@ -214,6 +209,72 @@ async def login(*, headless: bool = False) -> None:
     await context.close()
     await pw.stop()
     logging.info("Login session saved to %s", user_data_dir)
+
+
+async def change_runtime_type(page: Any, gpu_type: str) -> None:
+    """Change the Colab runtime hardware accelerator via the UI.
+
+    Clicks through: Runtime menu > Change runtime type > select GPU > Save.
+    After saving, Colab restarts the runtime which causes a WebSocket
+    disconnect. The caller should handle reconnection.
+
+    Args:
+        page: The Playwright `Page` object from `auto_connect`.
+        gpu_type: GPU shorthand (e.g. `"t4"`, `"a100"`, `"cpu"`).
+
+    Raises:
+        ValueError: If `gpu_type` is not a valid option.
+        RuntimeError: If any UI interaction fails.
+
+    !!! example "Usage"
+        ```python
+        await change_runtime_type(page, "t4")
+        ```
+    """
+    display_name = GPU_TYPES.get(gpu_type.lower())
+    if not display_name:
+        valid = ", ".join(GPU_TYPES.keys())
+        raise ValueError(f"Unknown GPU type: {gpu_type}. Valid options: {valid}")
+
+    timeout = RUNTIME_DIALOG_TIMEOUT
+    logging.info("Changing runtime to: %s (%s)", gpu_type, display_name)
+
+    try:
+        # Step 1: Click Runtime menu
+        runtime_menu = page.get_by_text("Runtime", exact=True).first
+        await runtime_menu.click()
+        logging.info("Opened Runtime menu")
+
+        # Step 2: Click "Change runtime type"
+        change_item = page.get_by_text("Change runtime type")
+        await change_item.wait_for(timeout=timeout, state="visible")
+        await change_item.click()
+        logging.info("Opened runtime type dialog")
+
+        # Step 3: Click the radio button for the hardware accelerator
+        # Colab uses radio buttons, not a dropdown
+        radio = page.get_by_role("radio", name=display_name)
+        await radio.wait_for(timeout=timeout, state="visible")
+        await radio.click()
+        logging.info("Selected: %s", display_name)
+
+        # Step 4: Click Save
+        save_btn = page.get_by_role("button", name="Save")
+        await save_btn.click()
+        logging.info("Runtime type saved. Colab will restart the runtime.")
+    except Exception as e:
+        # Save screenshot for debugging
+        screenshot_path = CONFIG_DIR / "debug-gpu-screenshot.png"
+        try:
+            await page.screenshot(path=str(screenshot_path))
+            logging.error(
+                "GPU selection failed. Screenshot saved to %s: %s",
+                screenshot_path,
+                e,
+            )
+        except Exception:
+            logging.error("GPU selection failed: %s", e)
+        raise RuntimeError(f"Failed to change runtime type to {gpu_type}: {e}") from e
 
 
 async def close_page(page: Any) -> None:
