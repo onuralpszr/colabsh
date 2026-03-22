@@ -5,7 +5,8 @@ tags:
 
 <div align="center" markdown>
 
-![colabsh logo](https://raw.githubusercontent.com/onuralpszr/colabsh/main/assets/colabsh-logo.png){ width="480" }
+![colabsh logo](https://raw.githubusercontent.com/onuralpszr/colabsh/main/assets/colabsh-logo.png){
+width="480" }
 
 # colabsh
 
