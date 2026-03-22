@@ -37,10 +37,10 @@ description = """
 """
 actions = [
     "accept",
-    "manage" 
+    "manage"
 ]
 
-[[project.theme.palette]] 
+[[project.theme.palette]]
 scheme = "default"
 toggle.icon = "lucide/sun"
 toggle.name = "Switch to dark mode"
