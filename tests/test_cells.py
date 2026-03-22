@@ -81,7 +81,7 @@ class TestExtractCells:
 
     def test_empty_structured_content_returns_empty(self) -> None:
         """structuredContent with no cells key returns [] from get()."""
-        result = {"structuredContent": {}}
+        result: dict[str, object] = {"structuredContent": {}}
         assert extract_cells(result) == []
 
     def test_non_list_structured_cells_falls_through(self) -> None:
