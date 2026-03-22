@@ -63,6 +63,14 @@ NOTEBOOK_KERNEL_DISPLAY = "Python 3"
 NOTEBOOK_DEFAULT_PYTHON = "3.12.0"
 NOTEBOOK_DEFAULT_OUTPUT = "notebook.py"
 
+# --- Playwright / Auto-connect ---
+BROWSER_PROFILE_DIR = "browser-profile"
+PLAYWRIGHT_NAV_TIMEOUT = 30_000  # milliseconds, page navigation
+PLAYWRIGHT_ACCEPT_TIMEOUT = 30_000  # milliseconds, wait for accept button
+# Colab MCP dialog: "Cancel" and "Connect" buttons
+MCP_ACCEPT_BUTTON_SELECTOR = "button"
+MCP_ACCEPT_BUTTON_TEXT = "Connect"
+
 # --- QR Code ---
 QR_VERSION = 1
 QR_BOX_SIZE = 1
