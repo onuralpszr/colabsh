@@ -179,7 +179,7 @@ def _print_exec_output(result: Any) -> None:
 
 @click.command()
 @click.option(
-    "--headless", is_flag=True, default=False, help="Don't open browser -print URL instead"
+    "--headless", is_flag=True, default=False, help="Don't open browser, print URL instead"
 )
 @click.option(
     "--qr",
