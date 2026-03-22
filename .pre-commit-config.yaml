@@ -1,4 +1,3 @@
-
 ci:
   autofix_prs: true
   autoupdate_schedule: weekly
@@ -18,7 +17,6 @@ repos:
       - id: pretty-format-json
       - id: end-of-file-fixer
       - id: mixed-line-ending
-
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.7
