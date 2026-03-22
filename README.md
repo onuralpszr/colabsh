@@ -172,7 +172,6 @@ All data is stored locally:
 
 | Platform | Path |
 |----------|------|
-
 | Linux | `~/.config/colabsh/` |
 | macOS | `~/Library/Application Support/colabsh/` |
 | Windows | `C:\Users\<user>\AppData\Roaming\colabsh\` |
