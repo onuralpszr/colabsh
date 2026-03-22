@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026-present Onuralp SEZER <thunderbirdtr@gmail.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """Top-level CLI commands — all use the persistent background server."""
 
 import json
@@ -19,6 +23,7 @@ from colabsh.constants import (
     TOOL_ADD_CODE_CELL,
     TOOL_RUN_CODE_CELL,
 )
+from colabsh.core.cells import extract_cell_id, extract_cells, join_source
 from colabsh.core.config import CONFIG_DIR, get_setting, set_setting
 from colabsh.core.history import record_notebook_event
 from colabsh.core.output import print_error, print_output
@@ -446,14 +451,14 @@ def download(ctx: click.Context, output: str, fmt: str | None, exec_file: str | 
                     "arguments": {"cellIndex": 0, "language": "python", "code": code},
                 },
             )
-            cell_id = _extract_cell_id_from_result(add_result)
+            cell_id = extract_cell_id(add_result)
             if cell_id:
                 run_args = {"name": TOOL_RUN_CODE_CELL, "arguments": {"cellId": cell_id}}
                 run_result = send_control(state, "call_tool", run_args)
                 _print_exec_output(run_result)
 
         result = send_control(state, "get_cells")
-        cells = _extract_cells(result)
+        cells = extract_cells(result)
         cells = [c for c in cells if c.get("source")]
 
         if not cells:
@@ -479,70 +484,12 @@ def download(ctx: click.Context, output: str, fmt: str | None, exec_file: str | 
 # --- File format helpers ---
 
 
-def _extract_cell_id_from_result(result: Any) -> str | None:
-    """Extract cell ID from add_code_cell result."""
-    if not isinstance(result, dict):
-        return None
-    content = result.get("content", [])
-    if isinstance(content, list):
-        for item in content:
-            if isinstance(item, dict):
-                text = item.get("text", "")
-                if text:
-                    try:
-                        parsed = json.loads(text)
-                        if isinstance(parsed, dict) and "newCellId" in parsed:
-                            cell_id: str = parsed["newCellId"]
-                            return cell_id
-                    except (ValueError, json.JSONDecodeError):
-                        pass
-                    return str(text.strip())
-    return None
-
-
-def _extract_cells(result: Any) -> list[dict[str, Any]]:
-    """Extract cell data from get_cells result."""
-    if not isinstance(result, dict):
-        return []
-
-    structured = result.get("structuredContent", {})
-    if isinstance(structured, dict):
-        found = structured.get("cells", [])
-        if isinstance(found, list):
-            return found
-
-    content = result.get("content", [])
-    if isinstance(content, list):
-        for item in content:
-            if isinstance(item, dict):
-                text = item.get("text", "")
-                if text:
-                    try:
-                        parsed = json.loads(text)
-                        if isinstance(parsed, dict) and "cells" in parsed:
-                            return parsed["cells"]  # type: ignore[no-any-return]
-                        if isinstance(parsed, list):
-                            return parsed
-                    except (ValueError, json.JSONDecodeError):
-                        pass
-    return []
-
-
-def _join_source(source: Any) -> str:
-    """Join cell source lines."""
-    if isinstance(source, str):
-        return source
-    if isinstance(source, list):
-        return "".join(source)
-    return str(source)
-
-
 def _save_as_python(cells: list[dict[str, Any]], path: str) -> None:
     """Save cells as a Python script."""
     parts: list[str] = []
     for cell in cells:
         cell_type = cell.get("cellType", cell.get("cell_type", ""))
-        source = _join_source(cell.get("source", cell.get("content", "")))
+        source = join_source(cell.get("source", cell.get("content", "")))
         if not source.strip():
             continue
         if cell_type == "code":

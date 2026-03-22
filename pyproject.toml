@@ -115,7 +115,8 @@ addopts = "--cov=colabsh --cov-report=term-missing --cov-report=html --cov-fail-
 
 # Coverage configuration
 [tool.coverage.run]
-source = ["colabsh"]
+source = ["src/colabsh"]
+relative_files = true
 branch = true
 omit = [
     "*/proxy.py",

@@ -24,10 +24,5 @@ def render_qr(url: str) -> str | None:
     qr.make(fit=True)
 
     matrix = qr.get_matrix()
-    lines: list[str] = []
-    for row in matrix:
-        line = ""
-        for cell in row:
-            line += QR_BLOCK_CHAR if cell else QR_SPACE_CHAR
-        lines.append(line)
+    lines = ["".join(QR_BLOCK_CHAR if cell else QR_SPACE_CHAR for cell in row) for row in matrix]
     return "\n".join(lines)

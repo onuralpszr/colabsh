@@ -28,6 +28,7 @@ from colabsh.constants import (
     TOOL_GET_CELLS,
     TOOL_RUN_CODE_CELL,
 )
+from colabsh.core.cells import extract_cell_id
 from colabsh.core.config import SERVER_LOG_PATH, SERVER_STATE_PATH, ensure_config_dir
 from colabsh.core.proxy import ColabProxy
 
@@ -111,7 +112,7 @@ class ControlServer:
         add_result = await self.proxy.call_tool(
             TOOL_ADD_CODE_CELL, {"cellIndex": 0, "language": "python", "code": code}
         )
-        cell_id = _extract_cell_id(add_result)
+        cell_id = extract_cell_id(add_result)
         if not cell_id:
             return {"error": "Failed to create cell", "raw": add_result}
 
@@ -223,27 +224,6 @@ class BackgroundServer:
         if SERVER_STATE_PATH.exists():
             SERVER_STATE_PATH.unlink()
         logging.info("Server stopped")
-
-
-def _extract_cell_id(result: Any) -> str | None:
-    """Extract cell ID from add_code_cell result."""
-    if not isinstance(result, dict):
-        return None
-    content = result.get("content", [])
-    if isinstance(content, list):
-        for item in content:
-            if isinstance(item, dict):
-                text = item.get("text", "")
-                if text:
-                    try:
-                        parsed = json.loads(text)
-                        if isinstance(parsed, dict) and "newCellId" in parsed:
-                            cell_id: str = parsed["newCellId"]
-                            return cell_id
-                    except (ValueError, json.JSONDecodeError):
-                        pass
-                    return str(text.strip())
-    return None
 
 
 # --- Client-side helpers (used by CLI commands) ---

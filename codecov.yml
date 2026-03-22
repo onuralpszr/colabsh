@@ -9,5 +9,4 @@ coverage: # https://docs.codecov.com/docs/codecovyml-reference#coverage
 ignore:
   - "examples"
 comment: # https://docs.codecov.com/docs/pull-request-comments
-  # make the comments less noisy
-  require_changes: true
+  require_changes: false
