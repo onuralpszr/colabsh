@@ -1,5 +1,8 @@
 # colabsh
 
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/onuralpszr/colabsh/main.svg)](https://results.pre-commit.ci/latest/github/onuralpszr/colabsh/main)
+
+
 A CLI tool for Google Colab. Execute code, download notebooks, and interact with Google Colab from the terminal.
 
 Connects to Google Colab through your browser via WebSocket no API keys needed.
