@@ -4,7 +4,7 @@ import platform
 import psutil
 
 
-def get_colab_info():
+def get_colab_info() -> None:
     print("=== System Info ===")
     print(f"OS: {platform.system()} {platform.release()}")
     print(f"Python Version: {platform.python_version()}")
