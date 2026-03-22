@@ -60,7 +60,9 @@ jobs:
         run: uv sync --group dev
 
       - name: Run tests
-        run: uv run pytest --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
+        run:
+          uv run pytest --cov-report=xml --junitxml=junit.xml -o
+          junit_family=legacy
 
       - name: Upload coverage
         if: matrix.python-version == '3.13'
