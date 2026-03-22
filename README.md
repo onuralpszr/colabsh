@@ -283,7 +283,7 @@ Apache-2.0
 
 ## Inspiration
 
-Inspired by [colab-mcp-proxy](https://github.com/googlecolab/colab-mcp-proxy)
+Inspired by [colab-mcp](https://github.com/googlecolab/colab-mcp)
 but with a focus on CLI usability, persistent server, and local history.
 
 ## Disclaimer
