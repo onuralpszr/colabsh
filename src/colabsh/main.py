@@ -17,7 +17,7 @@ from colabsh.history import history
 @click.option("--verbose", "-v", is_flag=True, default=False, help="Enable debug logging")
 @click.pass_context
 def cli(ctx: click.Context, use_json: bool, verbose: bool) -> None:
-    """Colabsh — execute code and interact with Google Colab from the terminal.
+    """Colabsh execute code and interact with Google Colab from the terminal.
 
     !!! example "Quick start"
         ```bash

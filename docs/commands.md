@@ -6,6 +6,59 @@ tags:
 
 # Commands
 
+## Shell completion
+
+Colabsh supports tab completion for all commands, options, and subcommands via
+Click's built-in shell completion.
+
+=== "Bash"
+
+    Add to `~/.bashrc`:
+
+    ```bash
+    eval "$(_COLABSH_COMPLETE=bash_source colabsh)"
+    ```
+
+=== "Zsh"
+
+    Add to `~/.zshrc`:
+
+    ```bash
+    eval "$(_COLABSH_COMPLETE=zsh_source colabsh)"
+    ```
+
+=== "Fish"
+
+    Add to `~/.config/fish/config.fish`:
+
+    ```fish
+    _COLABSH_COMPLETE=fish_source colabsh | source
+    ```
+
+!!! tip "Faster startup with cached completion"
+
+    Evaluating the completion script on every shell startup adds a small delay. You can generate the script once and source the file instead:
+
+    === "Bash"
+
+        ```bash
+        _COLABSH_COMPLETE=bash_source colabsh > ~/.colabsh-complete.bash
+        echo '. ~/.colabsh-complete.bash' >> ~/.bashrc
+        ```
+
+    === "Zsh"
+
+        ```bash
+        _COLABSH_COMPLETE=zsh_source colabsh > ~/.colabsh-complete.zsh
+        echo '. ~/.colabsh-complete.zsh' >> ~/.zshrc
+        ```
+
+    === "Fish"
+
+        ```fish
+        _COLABSH_COMPLETE=fish_source colabsh > ~/.config/fish/completions/colabsh.fish
+        ```
+
 ## Global options
 
 | Option            | Description                              |
@@ -28,10 +81,10 @@ Start the background server and connect to Google Colab.
     colabsh start --qr         # Print QR code + URL (implies --headless)
     ```
 
-| Option       | Description                                           |
-| ------------ | ----------------------------------------------------- |
-| `--headless` | Don't open browser — print the connection URL instead |
-| `--qr`       | Show QR code for the connection URL                   |
+| Option       | Description                                          |
+| ------------ | ---------------------------------------------------- |
+| `--headless` | Don't open browser, print the connection URL instead |
+| `--qr`       | Show QR code for the connection URL                  |
 
 ### `colabsh stop`
 

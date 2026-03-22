@@ -10,16 +10,16 @@ tags:
 
 !!! success "Security measures"
 
-    - Runs a **localhost-only** WebSocket server — not accessible from the network
+    - Runs a **localhost-only** WebSocket server, not accessible from the network
     - Uses a random **authentication token** for every session
     - Communicates with Google Colab via Google's MCP proxy protocol
-    - Stores data locally in your [config directory](configuration.md) — nothing is sent to third parties
+    - Stores data locally in your [config directory](configuration.md). Nothing is sent to third parties
 
 ## What to be aware of
 
 !!! warning "Important considerations"
 
-    - The connection URL contains a secret token — treat it like a password
+    - The connection URL contains a secret token. Treat it like a password
     - Anyone with the URL can execute code in your Google's Colab session
     - The background server runs until you stop it (`colabsh stop`)
     - Code execution happens on Google's Colab VMs, subject to Google's terms of service

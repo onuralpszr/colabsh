@@ -57,8 +57,8 @@ with it over TCP.
 
     The `BackgroundServer` orchestrates two async servers:
 
-    - **TCP Control Server** — accepts CLI commands as JSON messages, dispatches them to the proxy, and returns results
-    - **WebSocket Proxy** — maintains the connection to Google Colab
+    - **TCP Control Server** - accepts CLI commands as JSON messages, dispatches them to the proxy, and returns results
+    - **WebSocket Proxy** - maintains the connection to Google Colab
 
     The server runs as a detached subprocess, writing its state (port, PID, token) to `server.json` so the CLI can find it.
 
@@ -78,7 +78,7 @@ with it over TCP.
 ??? info "Cell helpers · Configuration · Output formatting"
 
     **Cell helpers** (`core/cells.py`)
-    :   Shared utilities for parsing Colab's JSON-RPC responses — extracting cell IDs from `add_code_cell` results and cell data from `get_cells` results.
+    :   Shared utilities for parsing Colab's JSON-RPC responses, extracting cell IDs from `add_code_cell` results and cell data from `get_cells` results.
 
     **Configuration** (`core/config.py`)
     :   Platform-specific configuration using Click's `get_app_dir()`. Manages settings as a simple JSON file.

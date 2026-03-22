@@ -146,7 +146,7 @@ class ControlServer:
         """Reconnect to Colab. In headless mode, returns URL instead of opening browser."""
         url = self.proxy.get_connection_url()
         if self.headless:
-            logging.info("Reconnect requested (headless) — URL: %s", url)
+            logging.info("Reconnect requested (headless) URL: %s", url)
             return {"url": url, "connected": False, "headless": True}
         self.proxy.open_browser()
         connected = await self.proxy.wait_for_connection(timeout=RECONNECT_TIMEOUT)
@@ -182,7 +182,7 @@ class BackgroundServer:
 
         if self.headless:
             url = self.proxy.get_connection_url()
-            logging.info("Headless mode — open this URL in a browser to connect:")
+            logging.info("Headless mode open this URL in a browser to connect:")
             logging.info(url)
             # Write URL to a separate file for the CLI to read
             url_path = SERVER_STATE_PATH.parent / CONNECTION_URL_FILE
@@ -252,7 +252,7 @@ def is_server_running() -> bool:
         os.kill(pid, 0)
         return True
     except (OSError, ProcessLookupError):
-        # Stale state file — clean up
+        # Stale state file clean up
         if SERVER_STATE_PATH.exists():
             SERVER_STATE_PATH.unlink()
         return False
