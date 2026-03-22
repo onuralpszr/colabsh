@@ -2,6 +2,7 @@
 name = "colabsh"
 dynamic = ["version"]
 description = "CLI tool for Google Colab - execute code and interact with Colab from the terminal"
+readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 authors = [{ name = "Osman Sezer" }]
