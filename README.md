@@ -11,8 +11,8 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 A CLI tool for Google Colab. Execute code, download notebooks, and interact with
-Google Colab from the terminal. Connects to Google Colab through your browser via
-WebSocket no API keys needed.
+Google Colab from the terminal. Connects to Google Colab through your browser
+via WebSocket no API keys needed.
 
 ## Installation
 
@@ -251,8 +251,11 @@ Apache-2.0
 
 ## Inspiration
 
-Inspired by https://github.com/googlecolab/colab-mcp-proxy but with a focus on CLI usability, persistent server, and local history.
+Inspired by https://github.com/googlecolab/colab-mcp-proxy but with a focus on
+CLI usability, persistent server, and local history.
 
 ## Disclaimer
 
-This project has no affiliation with Google. It reverse-engineers Google Colab's frontend protocol to enable terminal access. Use responsibly and in accordance with Google's terms of service.
+This project has no affiliation with Google. It reverse-engineers Google Colab's
+frontend protocol to enable terminal access. Use responsibly and in accordance
+with Google's terms of service.
