@@ -111,7 +111,7 @@ warn_unused_ignores = true
 # Pytest configuration
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=colabsh --cov-report=term-missing --cov-report=html --cov-fail-under=85"
+addopts = "--cov=src/colabsh --cov-report=term-missing --cov-report=html --cov-fail-under=85"
 
 # Coverage configuration
 [tool.coverage.run]
