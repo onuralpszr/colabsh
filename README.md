@@ -2,7 +2,7 @@
 
 A CLI tool for Google Colab. Execute code, download notebooks, and interact with Google Colab from the terminal.
 
-Connects to Google Colab through your browser via WebSocket — no API keys needed.
+Connects to Google Colab through your browser via WebSocket no API keys needed.
 
 ## Installation
 
@@ -27,11 +27,11 @@ uv sync
 ## Quick Start
 
 ```bash
-# Start the server (opens Colab in browser once)
+# Start the server (opens Google Colab in browser once)
 colabsh start
 
 # Execute code (reuses the same browser tab)
-colabsh exec "print('hello from Colab')"
+colabsh exec "print('hello from Google Colab')"
 colabsh exec -f script.py
 echo "import sys; print(sys.version)" | colabsh exec -
 
@@ -154,7 +154,7 @@ The only way to use colabsh from a different machine is **SSH port forwarding**,
 
 ### What to be aware of
 
-- The connection URL contains a secret token — treat it like a password
+- The connection URL contains a secret token treat it like a password
 - Anyone with the URL can execute code in your Colab session
 - The background server runs until you stop it (`colabsh stop`)
 - Code execution happens on Google's Colab VMs, subject to Google's terms of service
@@ -212,7 +212,7 @@ uv run mypy src/colabsh/        # Type check
 
 ## Architecture
 
-```
+```bash
 src/colabsh/
 ├── main.py              # Click CLI entry point
 ├── commands.py          # All commands (exec, repl, start, stop, download, tools)
