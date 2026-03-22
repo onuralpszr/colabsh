@@ -3,11 +3,17 @@ tags:
   - Guide
 ---
 
+<div align="center" markdown>
+
+![colabsh logo](https://raw.githubusercontent.com/onuralpszr/colabsh/main/assets/colabsh-logo.png){ width="480" }
+
 # colabsh
 
 A CLI tool for Google Colab. Execute code, download notebooks, and interact with
 Google Colab from the terminal. Connects to Google Colab through your browser
 via WebSocket — no API keys needed.
+
+</div>
 
 ## Features
 

@@ -56,6 +56,7 @@ checked = false
 
 [project.theme]
 variant = "modern"
+logo = "https://raw.githubusercontent.com/onuralpszr/colabsh/main/assets/colabsh-logo.png"
 features = [
     "navigation.footer"
 ]
