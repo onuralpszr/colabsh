@@ -28,6 +28,7 @@ via WebSocket. No API keys needed.
 - :material-history: **Local history** - track notebook sessions and access
   patterns
 - :material-code-json: **JSON output** - pipe results to other tools or LLMs
+- :material-tab: **Shell completion** - tab completion for Bash, Zsh, and Fish
 
 ## Quick start
 
