@@ -16,6 +16,7 @@ from colabsh.constants import (
     COLAB_NOTEBOOK_PATH,
     COLAB_URL,
     CONNECTION_URL_FILE,
+    GPU_CHOICES,
     NOTEBOOK_DEFAULT_OUTPUT,
     NOTEBOOK_DEFAULT_PYTHON,
     NOTEBOOK_FORMAT_MINOR,
@@ -40,12 +41,12 @@ from colabsh.core.server import (
 
 def _is_headless() -> bool:
     """Check if headless mode is configured."""
-    return get_setting("headless", False) is True
+    return bool(get_setting("headless", False))
 
 
 def _is_auto() -> bool:
     """Check if auto-connect mode is configured."""
-    return get_setting("auto", False) is True
+    return bool(get_setting("auto", False))
 
 
 def _poll_connected(state: dict[str, Any], timeout: int = 90) -> bool:
@@ -76,6 +77,45 @@ def _cli_handler(fn: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
+def _handle_reconnect_result(result: dict[str, Any], state: dict[str, Any], human: bool) -> None:
+    """Handle the result of a reconnect attempt, raising SystemExit on failure."""
+    if result.get("expired"):
+        print_error(
+            "Colab runtime expired. Run 'colabsh stop && colabsh start' to restart.",
+            human=human,
+        )
+        raise SystemExit(1)
+
+    if result.get("auto"):
+        if result.get("connected"):
+            click.echo("Auto-reconnected via Playwright!", err=True)
+        elif result.get("exhausted_retries"):
+            print_error(
+                "Reconnect failed after retries. Run 'colabsh stop && colabsh start' to restart.",
+                human=human,
+            )
+            raise SystemExit(1)
+        else:
+            click.echo("Colab disconnected. Playwright is reconnecting...", err=True)
+            if not _poll_connected(state, timeout=30):
+                print_error("Timed out waiting for Colab.", human=human)
+                raise SystemExit(1)
+            click.echo("Connected!", err=True)
+    elif result.get("headless"):
+        click.echo("Colab disconnected. Open this URL to reconnect:", err=True)
+        click.echo(result.get("url", ""), err=True)
+        click.echo("Waiting for connection...", err=True)
+        if not _poll_connected(state):
+            print_error("Timed out waiting for Colab.", human=human)
+            raise SystemExit(1)
+        click.echo("Connected!", err=True)
+    elif result.get("connected"):
+        click.echo("Reconnected!", err=True)
+    else:
+        print_error("Timed out waiting for Colab. Check the browser tab.", human=human)
+        raise SystemExit(1)
+
+
 def _ensure_server(human: bool) -> dict[str, Any]:
     """Ensure background server is running and connected. Auto-start/reconnect."""
     if is_server_running():
@@ -85,32 +125,7 @@ def _ensure_server(human: bool) -> dict[str, Any]:
                 ping = send_control(state, "ping")
                 if not ping.get("connected"):
                     result = send_control(state, "reconnect")
-                    if result.get("auto"):
-                        if result.get("connected"):
-                            click.echo("Auto-reconnected via Playwright!", err=True)
-                        else:
-                            click.echo(
-                                "Colab disconnected. Playwright is reconnecting...", err=True
-                            )
-                            if not _poll_connected(state):
-                                print_error("Timed out waiting for Colab.", human=human)
-                                raise SystemExit(1)
-                            click.echo("Connected!", err=True)
-                    elif result.get("headless"):
-                        click.echo("Colab disconnected. Open this URL to reconnect:", err=True)
-                        click.echo(result.get("url", ""), err=True)
-                        click.echo("Waiting for connection...", err=True)
-                        if not _poll_connected(state):
-                            print_error("Timed out waiting for Colab.", human=human)
-                            raise SystemExit(1)
-                        click.echo("Connected!", err=True)
-                    elif result.get("connected"):
-                        click.echo("Reconnected!", err=True)
-                    else:
-                        print_error(
-                            "Timed out waiting for Colab. Check the browser tab.", human=human
-                        )
-                        raise SystemExit(1)
+                    _handle_reconnect_result(result, state, human)
             except SystemExit:
                 raise
             except Exception:
@@ -250,6 +265,12 @@ def _print_exec_output(result: Any) -> None:
     type=click.Path(exists=True, file_okay=False),
     help="Path to an existing browser profile (e.g. ~/.config/google-chrome/Default)",
 )
+@click.option(
+    "--gpu",
+    default=None,
+    type=click.Choice(GPU_CHOICES, case_sensitive=False),
+    help="GPU type to select on start (requires --auto)",
+)
 @click.pass_context
 def start(
     ctx: click.Context,
@@ -258,6 +279,7 @@ def start(
     auto: bool,
     show_browser: bool,
     browser_profile: str | None,
+    gpu: str | None,
 ) -> None:
     """Start the background server and connect to Colab.
 
@@ -272,16 +294,16 @@ def start(
 
     !!! example "Usage"
         ```bash
-        colabsh start --auto                              # Fully headless
-        colabsh start --auto --show-browser               # Visible browser
-        colabsh start --auto --browser-profile ~/.config/google-chrome  # Reuse Chrome profile
-        colabsh start --headless                          # Print URL (SSH)
-        colabsh start --qr                                # Print QR code + URL
+        colabsh start --auto                    # Fully headless
+        colabsh start --auto --gpu t4           # Start with T4 GPU
+        colabsh start --auto --show-browser     # Visible browser
+        colabsh start --headless                # Print URL (SSH)
+        colabsh start --qr                      # Print QR code + URL
         ```
     """
     human: bool = ctx.obj["human"]
 
-    if browser_profile:
+    if browser_profile or gpu:
         auto = True
 
     if auto:
@@ -299,6 +321,8 @@ def start(
         set_setting("auto_show_browser", show_browser)
         if browser_profile:
             set_setting("browser_profile", browser_profile)
+        if gpu:
+            set_setting("gpu", gpu)
 
     if qr:
         headless = True
@@ -336,10 +360,21 @@ def start(
     if auto:
         _print_connection_url(state)
         click.echo("Playwright is handling the connection automatically.", err=True)
-        # Wait for Playwright to click accept and WebSocket to connect
         click.echo("Waiting for Colab to connect...", err=True)
         if _poll_connected(state, timeout=30):
             click.echo("Connected!", err=True)
+            # Change GPU if requested
+            if gpu:
+                click.echo(f"Switching runtime to {gpu}...", err=True)
+                try:
+                    result = send_control(state, "change_gpu", {"gpu_type": gpu})
+                    if result.get("changed"):
+                        click.echo(f"Runtime changed to {gpu}.", err=True)
+                        if not result.get("reconnected"):
+                            click.echo("Waiting for runtime to restart...", err=True)
+                            _poll_connected(state, timeout=60)
+                except Exception as e:
+                    click.echo(f"GPU change failed: {e}", err=True)
         else:
             click.echo("Connection pending. Check server log for details.", err=True)
     elif headless:
@@ -358,19 +393,35 @@ def start(
 @click.command()
 @click.pass_context
 def stop(ctx: click.Context) -> None:
-    """Stop the background server."""
+    """Stop the background server and clean up."""
     human: bool = ctx.obj["human"]
     if not is_server_running():
         print_output({"status": "not_running"}, human=human)
         return
     stop_server()
+    # Reset transient settings so next start is fresh
+    for key in ("headless", "auto", "auto_show_browser"):
+        set_setting(key, False)
     print_output({"status": "stopped"}, human=human)
 
 
 @click.command()
+@click.option("--health", is_flag=True, default=False, help="Run full health check (GPU/CPU info)")
 @click.pass_context
-def status(ctx: click.Context) -> None:
-    """Check if the background server is running."""
+def status(ctx: click.Context, health: bool) -> None:
+    """Check server status, connection state, and optionally runtime health.
+
+    !!! example "Usage"
+        === "Basic"
+            ```bash
+            colabsh status
+            ```
+
+        === "Full health check"
+            ```bash
+            colabsh status --health
+            ```
+    """
     human: bool = ctx.obj["human"]
     if not is_server_running():
         print_output({"status": "not_running"}, human=human)
@@ -381,7 +432,19 @@ def status(ctx: click.Context) -> None:
         return
     try:
         ping = send_control(state, "ping")
-        print_output({"status": "running", **state, **ping}, human=human)
+        output = {"status": "running", **state, **ping}
+
+        if health and ping.get("connected"):
+            try:
+                health_info = send_control(state, "health")
+                has_gpu = health_info.get("has_gpu")
+                runtime = health_info.get("gpu_name", "CPU") if has_gpu else "CPU"
+                output["runtime_type"] = runtime
+                output["runtime_alive"] = health_info.get("alive", False)
+            except Exception:
+                output["runtime_type"] = "unknown"
+
+        print_output(output, human=human)
     except Exception:
         print_output({"status": "running_no_response", **state}, human=human)
 
@@ -642,6 +705,55 @@ def _save_as_notebook(cells: list[dict[str, Any]], path: str) -> None:
     }
     with open(path, "w") as f:
         json.dump(notebook, f, indent=2)
+
+
+# --- GPU commands ---
+
+
+@click.command()
+@click.argument("gpu_type", type=click.Choice(GPU_CHOICES, case_sensitive=False))
+@click.pass_context
+def gpu(ctx: click.Context, gpu_type: str) -> None:
+    """Change the Colab runtime GPU type on the fly.
+
+    Requires the server to be running in --auto mode.
+
+    !!! example "Usage"
+        ```bash
+        colabsh gpu t4       # Switch to T4 GPU
+        colabsh gpu a100     # Switch to A100 GPU
+        colabsh gpu cpu      # Switch back to CPU
+        ```
+    """
+    human: bool = ctx.obj["human"]
+
+    if not is_server_running():
+        print_error("Server not running. Start with: colabsh start --auto", human=human)
+        raise SystemExit(1)
+
+    state = read_server_state()
+    if not state:
+        print_error("Server not running.", human=human)
+        raise SystemExit(1)
+
+    click.echo(f"Switching runtime to {gpu_type}...", err=True)
+    try:
+        result = send_control(state, "change_gpu", {"gpu_type": gpu_type})
+        if result.get("changed"):
+            click.echo(f"Runtime changed to {gpu_type}.", err=True)
+            if not result.get("reconnected"):
+                click.echo("Waiting for runtime to restart...", err=True)
+                if _poll_connected(state, timeout=60):
+                    click.echo("Connected!", err=True)
+                else:
+                    click.echo("Runtime restarting. Run 'colabsh status' to check.", err=True)
+            set_setting("gpu", gpu_type)
+            print_output(result, human=human)
+        else:
+            print_error(f"Failed to change GPU: {result}", human=human)
+    except RuntimeError as e:
+        print_error(str(e), human=human)
+        raise SystemExit(1) from None
 
 
 # --- Auth commands ---
