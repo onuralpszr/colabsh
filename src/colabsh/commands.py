@@ -191,17 +191,20 @@ def _print_exec_output(result: Any) -> None:
 def start(ctx: click.Context, headless: bool, qr: bool) -> None:
     """Start the background server and connect to Colab.
 
-    By default opens Colab in your browser. Use --headless to print the URL
+    By default opens Colab in your browser. Use `--headless` to print the URL
     instead (for SSH, containers, or remote machines).
 
-    Note: The URL must be opened on the SAME machine where colabsh runs,
-    because Colab's frontend connects to localhost. For remote access,
-    use SSH port forwarding: ssh -L PORT:localhost:PORT remote-host
+    !!! warning "localhost only"
+        The URL must be opened on the **same machine** where colabsh runs,
+        because Colab's frontend connects to localhost. For remote access,
+        use SSH port forwarding: `ssh -L PORT:localhost:PORT remote-host`
 
-    Examples:
+    !!! example "Usage"
+        ```bash
         colabsh start                  # Open browser
         colabsh start --headless       # Print URL (for SSH sessions)
         colabsh start --qr             # Print QR code + URL
+        ```
     """
     human: bool = ctx.obj["human"]
 
@@ -285,12 +288,21 @@ def status(ctx: click.Context) -> None:
 def exec_cmd(ctx: click.Context, code: str | None, filepath: str | None) -> None:
     """Execute Python code on Colab.
 
-    Examples:
-        colabsh exec "print('hello')"
+    !!! example "Usage"
+        === "Inline"
+            ```bash
+            colabsh exec "print('hello')"
+            ```
 
-        colabsh exec -f script.py
+        === "File"
+            ```bash
+            colabsh exec -f script.py
+            ```
 
-        echo "print(1)" | colabsh exec -
+        === "Stdin"
+            ```bash
+            echo "print(1)" | colabsh exec -
+            ```
     """
     human: bool = ctx.obj["human"]
 
@@ -332,7 +344,13 @@ def repl_cmd(ctx: click.Context) -> None:
     """Start an interactive Python REPL on Colab.
 
     Supports readline history (arrow keys) and multiline input.
-    Commands: /quit, /tools, /cells
+
+    !!! info "REPL commands"
+        | Command  | Action                              |
+        | -------- | ----------------------------------- |
+        | `/quit`  | Exit the REPL                       |
+        | `/tools` | List available Colab frontend tools |
+        | `/cells` | View current notebook cells         |
     """
     from colabsh.core.repl import run_repl_loop
 
@@ -424,10 +442,21 @@ def tools(ctx: click.Context) -> None:
 def download(ctx: click.Context, output: str, fmt: str | None, exec_file: str | None) -> None:
     """Download the current Colab notebook.
 
-    Examples:
-        colabsh download notebook.ipynb -f analysis.py
+    !!! example "Usage"
+        === "Jupyter notebook"
+            ```bash
+            colabsh download notebook.ipynb
+            ```
 
-        colabsh download script.py
+        === "Python script"
+            ```bash
+            colabsh download script.py
+            ```
+
+        === "Execute then download"
+            ```bash
+            colabsh download notebook.ipynb -f analysis.py
+            ```
     """
     human: bool = ctx.obj["human"]
 
