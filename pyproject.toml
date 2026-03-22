@@ -5,7 +5,7 @@ description = "CLI tool for Google Colab - execute code and interact with Colab 
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
-authors = [{ name = "Osman Sezer" }]
+authors = [{ name = "Onuralp Sezer" }]
 keywords = ["google", "colab", "cli", "jupyter", "notebook"]
 classifiers = [
     "Development Status :: 3 - Alpha",
