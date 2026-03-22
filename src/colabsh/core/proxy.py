@@ -8,6 +8,7 @@ import asyncio
 import json
 import logging
 import secrets
+import time
 import webbrowser
 from typing import Any
 
@@ -29,6 +30,7 @@ from colabsh.constants import (
     WS_HOST,
     WS_TOKEN_LENGTH,
 )
+from colabsh.core.models import ConnectionInfo, ConnectionState
 
 
 class ColabProxy:
@@ -43,6 +45,10 @@ class ColabProxy:
         self.port = 0
         self.token = secrets.token_urlsafe(WS_TOKEN_LENGTH)
         self._initialized = False
+        self.state = ConnectionState.DISCONNECTED
+        self.connected_at: float | None = None
+        self.disconnected_at: float | None = None
+        self.last_close_code: int | None = None
 
     def _validate_request(self, connection: ServerConnection, request: Request) -> Response | None:
         if request.path and f"access_token={self.token}" in request.path:
@@ -88,6 +94,7 @@ class ColabProxy:
             return
 
         self._ws = websocket
+        self.state = ConnectionState.CONNECTING
         self._connection_ready.set()
         logging.info("Colab frontend connected")
 
@@ -95,10 +102,13 @@ class ColabProxy:
 
         try:
             await self._do_initialize()
+            self.state = ConnectionState.CONNECTED
+            self.connected_at = time.monotonic()
         except Exception as e:
             logging.error("MCP handshake failed: %s", e)
             reader_task.cancel()
             self._ws = None
+            self.state = ConnectionState.DISCONNECTED
             self._connection_ready.clear()
             return
 
@@ -107,10 +117,18 @@ class ColabProxy:
         except Exception as e:
             logging.info("Connection closed: %s", e)
         finally:
+            close_code = getattr(websocket, "close_code", None)
+            self.last_close_code = close_code
             self._ws = None
             self._initialized = False
             self._connection_ready.clear()
-            logging.info("Colab frontend disconnected")
+            self.disconnected_at = time.monotonic()
+            if close_code == 1001:
+                self.state = ConnectionState.EXPIRED
+                logging.info("Colab runtime expired (close code 1001)")
+            else:
+                self.state = ConnectionState.DISCONNECTED
+                logging.info("Colab frontend disconnected (close code: %s)", close_code)
 
     async def _send_request(
         self, method: str, params: dict[str, Any] | None = None
@@ -208,3 +226,16 @@ class ColabProxy:
     @property
     def is_connected(self) -> bool:
         return self._ws is not None and self._initialized
+
+    def connection_info(self) -> ConnectionInfo:
+        """Return connection state as a Pydantic model."""
+        return ConnectionInfo(
+            connected=self.is_connected,
+            connection_state=self.state,
+            connected_for_seconds=(
+                round(time.monotonic() - self.connected_at)
+                if self.connected_at is not None and self.is_connected
+                else None
+            ),
+            last_close_code=self.last_close_code,
+        )
