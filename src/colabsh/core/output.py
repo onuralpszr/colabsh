@@ -10,7 +10,31 @@ from pydantic import BaseModel
 
 
 def format_output(data: Any, *, human: bool = False) -> str:
-    """Format data as JSON (default) or human-readable text."""
+    """Format data as JSON (default) or human-readable text.
+
+    Supports dicts, lists, scalars, and Pydantic models.
+
+    Args:
+        data: The data to format (dict, list, scalar, or Pydantic model).
+        human: If `True`, output human-readable key-value pairs.
+            If `False` (default), output JSON.
+
+    Returns:
+        The formatted string.
+
+    !!! example
+        === "JSON (default)"
+            ```python
+            format_output({"status": "ok"})
+            # '{"status": "ok"}'
+            ```
+
+        === "Human-readable"
+            ```python
+            format_output({"status": "ok"}, human=True)
+            # 'status: ok'
+            ```
+    """
     if isinstance(data, BaseModel):
         data = data.model_dump(by_alias=True)
 
@@ -43,12 +67,24 @@ def _format_human(data: Any) -> str:
 
 
 def print_output(data: Any, *, human: bool = False, file: IO[str] | None = None) -> None:
-    """Format and print data."""
+    """Format and print data to stdout (or a custom file).
+
+    Args:
+        data: The data to format and print.
+        human: If `True`, print human-readable output.
+        file: Output stream (defaults to `sys.stdout`).
+    """
     print(format_output(data, human=human), file=file or sys.stdout)
 
 
 def print_error(message: str, *, human: bool = False) -> None:
-    """Print an error message."""
+    """Print an error message to stderr.
+
+    Args:
+        message: The error message text.
+        human: If `True`, print `Error: <message>`.
+            If `False`, print `{"error": "<message>"}` as JSON.
+    """
     if human:
         print(f"Error: {message}", file=sys.stderr)
     else:
