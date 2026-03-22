@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Top-level CLI commands — all use the persistent background server."""
+"""Top-level CLI commands all use the persistent background server."""
 
 import json
 import sys
@@ -85,7 +85,7 @@ def _ensure_server(human: bool) -> dict[str, Any]:
         click.echo("Starting server (headless)...", err=True)
     else:
         click.echo("Starting server...", err=True)
-        click.echo("Opening Colab in browser — please wait for connection...", err=True)
+        click.echo("Opening Colab in browser -please wait for connection...", err=True)
 
     state = start_server(headless=headless)
     if not state:
@@ -179,7 +179,7 @@ def _print_exec_output(result: Any) -> None:
 
 @click.command()
 @click.option(
-    "--headless", is_flag=True, default=False, help="Don't open browser — print URL instead"
+    "--headless", is_flag=True, default=False, help="Don't open browser -print URL instead"
 )
 @click.option(
     "--qr",

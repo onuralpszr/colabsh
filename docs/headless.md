@@ -76,6 +76,6 @@ This prints an ASCII QR code alongside the URL.
 
 !!! warning "localhost only"
 
-    Google Colab's frontend JavaScript **always connects WebSocket to `localhost`** — this is hardcoded in Google's code. When you open the URL on a different device (phone, another computer), the browser tries to connect to `localhost` on *that* device, which doesn't have the colabsh server.
+    Google Colab's frontend JavaScript **always connects WebSocket to `localhost`** this is hardcoded in Google's code. When you open the URL on a different device (phone, another computer), the browser tries to connect to `localhost` on *that* device, which doesn't have the colabsh server.
 
     The only way to use colabsh from a different machine is **SSH port forwarding**, which makes the remote port appear as `localhost` on your local machine.

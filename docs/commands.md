@@ -30,7 +30,7 @@ Start the background server and connect to Google Colab.
 
 | Option       | Description                                           |
 | ------------ | ----------------------------------------------------- |
-| `--headless` | Don't open browser — print the connection URL instead |
+| `--headless` | Don't open browser print the connection URL instead |
 | `--qr`       | Show QR code for the connection URL                   |
 
 ### `colabsh stop`
