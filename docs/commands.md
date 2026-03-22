@@ -8,7 +8,8 @@ tags:
 
 ## Shell completion
 
-Colabsh supports tab completion for all commands, options, and subcommands via Click's built-in shell completion.
+Colabsh supports tab completion for all commands, options, and subcommands via
+Click's built-in shell completion.
 
 === "Bash"
 
@@ -80,10 +81,10 @@ Start the background server and connect to Google Colab.
     colabsh start --qr         # Print QR code + URL (implies --headless)
     ```
 
-| Option       | Description                                           |
-| ------------ | ----------------------------------------------------- |
+| Option       | Description                                          |
+| ------------ | ---------------------------------------------------- |
 | `--headless` | Don't open browser, print the connection URL instead |
-| `--qr`       | Show QR code for the connection URL                   |
+| `--qr`       | Show QR code for the connection URL                  |
 
 ### `colabsh stop`
 
