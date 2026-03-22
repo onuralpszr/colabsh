@@ -32,7 +32,7 @@
 
 A CLI tool for Google Colab. Execute code, download notebooks, and interact with
 Google Colab from the terminal. Connects to Google Colab through your browser
-via WebSocket — no API keys needed.
+via WebSocket no API keys needed.
 
 ---
 
@@ -95,7 +95,7 @@ colabsh stop ───────────────▶ shuts down
 1. `colabsh start` launches a background server and opens Colab in your browser
 2. Colab's frontend connects back via WebSocket (MCP proxy protocol)
 3. All subsequent commands go through this persistent connection
-4. **One browser tab** serves all commands — no new tabs per command
+4. **One browser tab** serves all commands no new tabs per command
 5. The server auto-starts if you run `exec`/`repl` without starting first
 
 ## Commands
@@ -181,7 +181,7 @@ colabsh exec "print('running on remote')"
 ```
 
 > **Why not LAN/phone access?** Google Colab's frontend JavaScript **always
-> connects WebSocket to `localhost`** — this is hardcoded in Google's code. When
+> connects WebSocket to `localhost`** this is hardcoded in Google's code. When
 > you open the URL on a different device, the browser tries to connect to
 > `localhost` on _that_ device, which doesn't have the colabsh server. The only
 > workaround is **SSH port forwarding**, which makes the remote port appear as
@@ -191,15 +191,15 @@ colabsh exec "print('running on remote')"
 
 ### What colabsh does
 
-- Runs a **localhost-only** WebSocket server — not accessible from the network
+- Runs a **localhost-only** WebSocket server not accessible from the network
 - Uses a random **authentication token** for every session
 - Communicates with Google Colab via Google's MCP proxy protocol
-- Stores data locally in your [config directory](#config-directory) — nothing is
+- Stores data locally in your [config directory](#config-directory) nothing is
   sent to third parties
 
 ### What to be aware of
 
-- The connection URL contains a secret token — treat it like a password
+- The connection URL contains a secret token treat it like a password
 - Anyone with the URL can execute code in your Colab session
 - The background server runs until you stop it (`colabsh stop`)
 - Code execution happens on Google's Colab VMs, subject to Google's terms of
