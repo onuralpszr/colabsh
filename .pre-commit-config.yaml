@@ -36,4 +36,5 @@ repos:
           - pydantic>=2.12.3
           - websockets>=15.0.1
           - pytest
+          - types-psutil
         args: [--config-file=pyproject.toml]

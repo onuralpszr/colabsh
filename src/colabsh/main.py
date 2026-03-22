@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from colabsh.commands import download, exec_cmd, repl_cmd, start, status, stop, tools
+from colabsh.commands import download, exec_cmd, login, repl_cmd, start, status, stop, tools
 from colabsh.history import history
 
 
@@ -42,6 +42,7 @@ cli.add_command(repl_cmd, name="repl")
 cli.add_command(download)
 cli.add_command(tools)
 cli.add_command(history)
+cli.add_command(login)
 
 
 if __name__ == "__main__":

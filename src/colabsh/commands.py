@@ -6,6 +6,8 @@
 
 import json
 import sys
+import time
+from collections.abc import Callable
 from typing import Any
 
 import click
@@ -41,6 +43,39 @@ def _is_headless() -> bool:
     return get_setting("headless", False) is True
 
 
+def _is_auto() -> bool:
+    """Check if auto-connect mode is configured."""
+    return get_setting("auto", False) is True
+
+
+def _poll_connected(state: dict[str, Any], timeout: int = 90) -> bool:
+    """Poll the server until Colab connects or timeout. Returns True if connected."""
+    for _ in range(timeout):
+        time.sleep(1)
+        if send_control(state, "ping").get("connected"):
+            return True
+    return False
+
+
+def _cli_handler(fn: Callable[..., Any]) -> Callable[..., Any]:
+    """Wrap a CLI command body to catch exceptions and exit cleanly."""
+
+    def wrapper(ctx: click.Context, *args: Any, **kwargs: Any) -> Any:
+        human: bool = ctx.obj["human"]
+        try:
+            return fn(ctx, *args, human=human, **kwargs)
+        except SystemExit:
+            raise
+        except RuntimeError as e:
+            print_error(str(e), human=human)
+            raise SystemExit(1) from None
+        except Exception as e:
+            print_error(str(e), human=human)
+            raise SystemExit(1) from None
+
+    return wrapper
+
+
 def _ensure_server(human: bool) -> dict[str, Any]:
     """Ensure background server is running and connected. Auto-start/reconnect."""
     if is_server_running():
@@ -50,23 +85,25 @@ def _ensure_server(human: bool) -> dict[str, Any]:
                 ping = send_control(state, "ping")
                 if not ping.get("connected"):
                     result = send_control(state, "reconnect")
-                    if result.get("headless"):
-                        url = result.get("url", "")
-                        click.echo("Colab disconnected. Open this URL to reconnect:", err=True)
-                        click.echo(url, err=True)
-                        # Wait for connection
-                        click.echo("Waiting for connection...", err=True)
-                        import time
-
-                        for _ in range(90):
-                            time.sleep(1)
-                            p = send_control(state, "ping")
-                            if p.get("connected"):
-                                click.echo("Connected!", err=True)
-                                break
+                    if result.get("auto"):
+                        if result.get("connected"):
+                            click.echo("Auto-reconnected via Playwright!", err=True)
                         else:
+                            click.echo(
+                                "Colab disconnected. Playwright is reconnecting...", err=True
+                            )
+                            if not _poll_connected(state):
+                                print_error("Timed out waiting for Colab.", human=human)
+                                raise SystemExit(1)
+                            click.echo("Connected!", err=True)
+                    elif result.get("headless"):
+                        click.echo("Colab disconnected. Open this URL to reconnect:", err=True)
+                        click.echo(result.get("url", ""), err=True)
+                        click.echo("Waiting for connection...", err=True)
+                        if not _poll_connected(state):
                             print_error("Timed out waiting for Colab.", human=human)
                             raise SystemExit(1)
+                        click.echo("Connected!", err=True)
                     elif result.get("connected"):
                         click.echo("Reconnected!", err=True)
                     else:
@@ -80,14 +117,22 @@ def _ensure_server(human: bool) -> dict[str, Any]:
                 pass
             return state
 
+    auto = _is_auto()
     headless = _is_headless()
-    if headless:
+    show_browser = get_setting("auto_show_browser", False) is True
+    browser_profile = get_setting("browser_profile")
+    if auto:
+        click.echo("Starting server (auto-connect)...", err=True)
+        headless = True
+    elif headless:
         click.echo("Starting server (headless)...", err=True)
     else:
         click.echo("Starting server...", err=True)
-        click.echo("Opening Colab in browser -please wait for connection...", err=True)
+        click.echo("Opening Colab in browser, please wait for connection...", err=True)
 
-    state = start_server(headless=headless)
+    state = start_server(
+        headless=headless, auto=auto, show_browser=show_browser, browser_profile=browser_profile
+    )
     if not state:
         print_error("Failed to start server. Check ~/.config/colabsh/server.log", human=human)
         raise SystemExit(1)
@@ -187,12 +232,38 @@ def _print_exec_output(result: Any) -> None:
     default=False,
     help="Show QR code for the connection URL (implies --headless)",
 )
+@click.option(
+    "--auto",
+    is_flag=True,
+    default=False,
+    help="Auto-connect using Playwright (no manual browser interaction)",
+)
+@click.option(
+    "--show-browser",
+    is_flag=True,
+    default=False,
+    help="Show the browser window when using --auto (for debugging)",
+)
+@click.option(
+    "--browser-profile",
+    default=None,
+    type=click.Path(exists=True, file_okay=False),
+    help="Path to an existing browser profile (e.g. ~/.config/google-chrome/Default)",
+)
 @click.pass_context
-def start(ctx: click.Context, headless: bool, qr: bool) -> None:
+def start(
+    ctx: click.Context,
+    headless: bool,
+    qr: bool,
+    auto: bool,
+    show_browser: bool,
+    browser_profile: str | None,
+) -> None:
     """Start the background server and connect to Colab.
 
     By default opens Colab in your browser. Use `--headless` to print the URL
-    instead (for SSH, containers, or remote machines).
+    instead (for SSH, containers, or remote machines). Use `--auto` for fully
+    headless operation with Playwright (requires `pip install colabsh[auto]`).
 
     !!! warning "localhost only"
         The URL must be opened on the **same machine** where colabsh runs,
@@ -201,12 +272,33 @@ def start(ctx: click.Context, headless: bool, qr: bool) -> None:
 
     !!! example "Usage"
         ```bash
-        colabsh start                  # Open browser
-        colabsh start --headless       # Print URL (for SSH sessions)
-        colabsh start --qr             # Print QR code + URL
+        colabsh start --auto                              # Fully headless
+        colabsh start --auto --show-browser               # Visible browser
+        colabsh start --auto --browser-profile ~/.config/google-chrome  # Reuse Chrome profile
+        colabsh start --headless                          # Print URL (SSH)
+        colabsh start --qr                                # Print QR code + URL
         ```
     """
     human: bool = ctx.obj["human"]
+
+    if browser_profile:
+        auto = True
+
+    if auto:
+        from colabsh.core.browser import is_playwright_available
+
+        if not is_playwright_available():
+            print_error(
+                "Playwright not installed. Run: pip install colabsh[auto] "
+                "&& playwright install chromium",
+                human=human,
+            )
+            raise SystemExit(1)
+        headless = True
+        set_setting("auto", True)
+        set_setting("auto_show_browser", show_browser)
+        if browser_profile:
+            set_setting("browser_profile", browser_profile)
 
     if qr:
         headless = True
@@ -224,21 +316,37 @@ def start(ctx: click.Context, headless: bool, qr: bool) -> None:
                 print_output(state, human=human)
             return
 
-    if headless:
+    if auto:
+        mode = "auto-connect, visible browser" if show_browser else "auto-connect"
+        click.echo(f"Starting server ({mode})...", err=True)
+        click.echo("Playwright is launching Chromium and navigating to Colab...", err=True)
+    elif headless:
         click.echo("Starting server (headless)...", err=True)
     else:
         click.echo("Starting server...", err=True)
         click.echo("Opening Colab in browser...", err=True)
 
-    state = start_server(headless=headless)
+    state = start_server(
+        headless=headless, auto=auto, show_browser=show_browser, browser_profile=browser_profile
+    )
     if not state:
         print_error("Failed to start server. Check ~/.config/colabsh/server.log", human=human)
         raise SystemExit(1)
 
-    if headless:
+    if auto:
         _print_connection_url(state)
-
-    click.echo("Server ready! Waiting for Colab to connect...", err=True)
+        click.echo("Playwright is handling the connection automatically.", err=True)
+        # Wait for Playwright to click accept and WebSocket to connect
+        click.echo("Waiting for Colab to connect...", err=True)
+        if _poll_connected(state, timeout=30):
+            click.echo("Connected!", err=True)
+        else:
+            click.echo("Connection pending. Check server log for details.", err=True)
+    elif headless:
+        _print_connection_url(state)
+        click.echo("Server ready! Waiting for Colab to connect...", err=True)
+    else:
+        click.echo("Server ready! Waiting for Colab to connect...", err=True)
 
     try:
         ping_result = send_control(state, "ping")
@@ -304,9 +412,10 @@ def exec_cmd(ctx: click.Context, code: str | None, filepath: str | None) -> None
             echo "print(1)" | colabsh exec -
             ```
     """
-    human: bool = ctx.obj["human"]
 
-    try:
+    @_cli_handler
+    def _run(ctx: click.Context, *, human: bool) -> None:
+        nonlocal code
         if filepath:
             with open(filepath) as f:
                 code = f.read()
@@ -328,14 +437,8 @@ def exec_cmd(ctx: click.Context, code: str | None, filepath: str | None) -> None
             _print_exec_output(result)
         else:
             print_output(result, human=False)
-    except SystemExit:
-        raise
-    except RuntimeError as e:
-        print_error(str(e), human=human)
-        raise SystemExit(1) from None
-    except Exception as e:
-        print_error(str(e), human=human)
-        raise SystemExit(1) from None
+
+    _run(ctx)
 
 
 @click.command(name="repl")
@@ -354,34 +457,18 @@ def repl_cmd(ctx: click.Context) -> None:
     """
     from colabsh.core.repl import run_repl_loop
 
-    human: bool = ctx.obj["human"]
-
-    try:
+    @_cli_handler
+    def _run(ctx: click.Context, *, human: bool) -> None:
         state = _ensure_server(human)
         record_notebook_event("session", "repl")
 
-        # Check connection
-        ping = send_control(state, "ping")
-        if not ping.get("connected"):
+        if not send_control(state, "ping").get("connected"):
             click.echo("Waiting for Colab to connect in browser...", err=True)
-            import time
-
-            for _ in range(60):
-                time.sleep(1)
-                ping = send_control(state, "ping")
-                if ping.get("connected"):
-                    break
-            else:
+            if not _poll_connected(state, timeout=60):
                 print_error("Timed out waiting for Colab connection.", human=human)
                 raise SystemExit(1)
 
         click.echo("Connected! Type /quit to exit, /tools to list tools, /cells to view cells.\n")
-
-        def execute(code: str) -> Any:
-            return send_control(state, "exec", {"code": code})
-
-        def format_result(result: Any) -> None:
-            _print_exec_output(result)
 
         def show_tools() -> None:
             tools = send_control(state, "list_tools")
@@ -391,35 +478,29 @@ def repl_cmd(ctx: click.Context) -> None:
             else:
                 click.echo(str(tools))
 
-        def show_cells() -> None:
-            cells = send_control(state, "get_cells")
-            _print_exec_output(cells)
-
         run_repl_loop(
-            execute,
-            format_result,
-            extra_commands={"/tools": show_tools, "/cells": show_cells},
+            lambda code: send_control(state, "exec", {"code": code}),
+            _print_exec_output,
+            extra_commands={
+                "/tools": show_tools,
+                "/cells": lambda: _print_exec_output(send_control(state, "get_cells")),
+            },
         )
 
-    except SystemExit:
-        raise
-    except Exception as e:
-        print_error(str(e), human=human)
-        raise SystemExit(1) from None
+    _run(ctx)
 
 
 @click.command()
 @click.pass_context
 def tools(ctx: click.Context) -> None:
     """List available tools from the Colab frontend."""
-    human: bool = ctx.obj["human"]
-    try:
+
+    @_cli_handler
+    def _run(ctx: click.Context, *, human: bool) -> None:
         state = _ensure_server(human)
-        result = send_control(state, "list_tools")
-        print_output(result, human=human)
-    except RuntimeError as e:
-        print_error(str(e), human=human)
-        raise SystemExit(1) from None
+        print_output(send_control(state, "list_tools"), human=human)
+
+    _run(ctx)
 
 
 @click.command()
@@ -458,12 +539,11 @@ def download(ctx: click.Context, output: str, fmt: str | None, exec_file: str | 
             colabsh download notebook.ipynb -f analysis.py
             ```
     """
-    human: bool = ctx.obj["human"]
 
-    if fmt is None:
-        fmt = "ipynb" if output.endswith(".ipynb") else "py"
+    @_cli_handler
+    def _run(ctx: click.Context, *, human: bool) -> None:
+        resolved_fmt = fmt if fmt is not None else ("ipynb" if output.endswith(".ipynb") else "py")
 
-    try:
         state = _ensure_server(human)
         record_notebook_event("session", "download")
 
@@ -471,7 +551,6 @@ def download(ctx: click.Context, output: str, fmt: str | None, exec_file: str | 
             with open(exec_file) as f:
                 code = f.read()
             click.echo(f"Executing {exec_file}...", err=True)
-            # Execute keeping the cell (use call_tool directly)
             add_result = send_control(
                 state,
                 "call_tool",
@@ -482,32 +561,27 @@ def download(ctx: click.Context, output: str, fmt: str | None, exec_file: str | 
             )
             cell_id = extract_cell_id(add_result)
             if cell_id:
-                run_args = {"name": TOOL_RUN_CODE_CELL, "arguments": {"cellId": cell_id}}
-                run_result = send_control(state, "call_tool", run_args)
+                run_result = send_control(
+                    state,
+                    "call_tool",
+                    {"name": TOOL_RUN_CODE_CELL, "arguments": {"cellId": cell_id}},
+                )
                 _print_exec_output(run_result)
 
-        result = send_control(state, "get_cells")
-        cells = extract_cells(result)
-        cells = [c for c in cells if c.get("source")]
+        cells = [c for c in extract_cells(send_control(state, "get_cells")) if c.get("source")]
 
         if not cells:
             print_error("No cells found in notebook", human=human)
             raise SystemExit(1)
 
-        if fmt == "py":
-            _save_as_python(cells, output)
-        else:
-            _save_as_notebook(cells, output)
+        (_save_as_python if resolved_fmt == "py" else _save_as_notebook)(cells, output)
 
         print_output(
-            {"status": "downloaded", "path": output, "cells": len(cells), "format": fmt},
+            {"status": "downloaded", "path": output, "cells": len(cells), "format": resolved_fmt},
             human=human,
         )
-    except SystemExit:
-        raise
-    except Exception as e:
-        print_error(str(e), human=human)
-        raise SystemExit(1) from None
+
+    _run(ctx)
 
 
 # --- File format helpers ---
@@ -568,3 +642,39 @@ def _save_as_notebook(cells: list[dict[str, Any]], path: str) -> None:
     }
     with open(path, "w") as f:
         json.dump(notebook, f, indent=2)
+
+
+# --- Auth commands ---
+
+
+@click.command()
+def login() -> None:
+    """Log in to Google for headless auto-connect mode.
+
+    Opens a visible browser window for you to sign in to your Google
+    account. The session is saved so that `colabsh start --auto` can
+    reuse it without manual interaction.
+
+    !!! example "Usage"
+        ```bash
+        colabsh login              # Sign in once
+        colabsh start --auto       # Then use auto mode
+        ```
+    """
+    import asyncio
+
+    from colabsh.core.browser import is_playwright_available
+    from colabsh.core.browser import login as browser_login
+
+    if not is_playwright_available():
+        click.echo(
+            "Playwright not installed. Run: pip install colabsh[auto] "
+            "&& playwright install chromium",
+            err=True,
+        )
+        raise SystemExit(1)
+
+    click.echo("Opening browser for Google login...", err=True)
+    click.echo("Log in to your Google account, then come back here.", err=True)
+    asyncio.run(browser_login())
+    click.echo("Login session saved. You can now use 'colabsh start --auto'.", err=True)

@@ -41,11 +41,6 @@ def save_readline() -> None:
         pass
 
 
-def read_input(prompt: str) -> str:
-    """Read a line of input using readline (supports arrow keys, history)."""
-    return input(prompt)
-
-
 def collect_multiline(line: str, buffer: list[str]) -> str | None:
     """Handle multiline input. Returns complete code when ready, None if still collecting."""
     if line.endswith((":", "\\")) or buffer:
@@ -73,7 +68,7 @@ def run_repl_loop(
         while True:
             try:
                 prompt = REPL_CONTINUATION_PROMPT if buffer else REPL_PROMPT
-                line = read_input(prompt)
+                line = input(prompt)
             except EOFError:
                 break
             except KeyboardInterrupt:
