@@ -1,6 +1,8 @@
-import platform
-import psutil
 import os
+import platform
+
+import psutil
+
 
 def get_colab_info():
     print("=== System Info ===")
@@ -26,5 +28,6 @@ def get_colab_info():
         print(f"GPU Model: {gpu_info}")
     else:
         print("No GPU detected. (Go to Runtime > Change runtime type to enable GPU)")
+
 
 get_colab_info()
