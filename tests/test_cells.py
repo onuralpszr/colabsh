@@ -34,6 +34,11 @@ class TestExtractCellId:
         result = {"content": ["not-a-dict", {"text": json.dumps({"newCellId": "abc"})}]}
         assert extract_cell_id(result) == "abc"
 
+    def test_json_dict_without_new_cell_id(self) -> None:
+        """Valid JSON dict without newCellId falls through to raw text return."""
+        result = {"content": [{"text": json.dumps({"other": "data"})}]}
+        assert extract_cell_id(result) == '{"other": "data"}'
+
     def test_non_list_content(self) -> None:
         result = {"content": "not-a-list"}
         assert extract_cell_id(result) is None
@@ -112,6 +117,20 @@ class TestExtractCells:
     def test_content_with_empty_text(self) -> None:
         result = {"structuredContent": {"cells": "skip"}, "content": [{"text": ""}]}
         assert extract_cells(result) == []
+
+    def test_json_dict_without_cells_key_continues_loop(self) -> None:
+        """Valid JSON dict without 'cells' key continues to next content item."""
+        cells_data = [{"source": "found"}]
+        result = {
+            "structuredContent": {"cells": "skip"},
+            "content": [
+                {"text": json.dumps({"other": "data"})},
+                {"text": json.dumps(cells_data)},
+            ],
+        }
+        cells = extract_cells(result)
+        assert len(cells) == 1
+        assert cells[0]["source"] == "found"
 
     def test_non_list_content(self) -> None:
         result = {"structuredContent": {"cells": "skip"}, "content": "not-a-list"}
