@@ -1,12 +1,27 @@
 # colabsh
 
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/onuralpszr/colabsh/main.svg)](https://results.pre-commit.ci/latest/github/onuralpszr/colabsh/main)
-[![autofix enabled](https://shields.io/badge/autofix.ci-yes-success?logo=data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZmZmIiB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCB0cmFuc2Zvcm09InNjYWxlKDAuMDYxLC0wLjA2MSkgdHJhbnNsYXRlKC0yNTAsLTE3NTApIiBkPSJNMTMyNSAtMzQwcS0xMTUgMCAtMTY0LjUgMzIuNXQtNDkuNSAxMTQuNXEwIDMyIDUgNzAuNXQxMC41IDcyLjV0NS41IDU0djIyMHEtMzQgLTkgLTY5LjUgLTE0dC03MS41IC01cS0xMzYgMCAtMjUxLjUgNjJ0LTE5MSAxNjl0LTkyLjUgMjQxcS05MCAxMjAgLTkwIDI2NnEwIDEwOCA0OC41IDIwMC41dDEzMiAxNTUuNXQxODguNSA4MXExNSA5OSAxMDAuNSAxODAuNXQyMTcgMTMwLjV0MjgyLjUgNDlxMTM2IDAgMjU2LjUgLTQ2IHQyMDkgLTEyNy41dDEyOC41IC0xODkuNXExNDkgLTgyIDIyNyAtMjEzLjV0NzggLTI5OS41cTAgLTEzNiAtNTggLTI0NnQtMTY1LjUgLTE4NC41dC0yNTYuNSAtMTAzLjVsLTI0MyAtMzAwdi01MnEwIC0yNyAzLjUgLTU2LjV0Ni41IC01Ny41dDMgLTUycTAgLTg1IC00MS41IC0xMTguNXQtMTU3LjUgLTMzLjV6TTEzMjUgLTI2MHE3NyAwIDk4IDE0LjV0MjEgNTcuNXEwIDI5IC0zIDY4dC02LjUgNzN0LTMuNSA0OHY2NGwyMDcgMjQ5IHEtMzEgMCAtNjAgNS41dC01NCAxMi41bC0xMDQgLTEyM3EtMSAzNCAtMiA2My41dC0xIDU0LjVxMCA2OSA5IDEyM2wzMSAyMDBsLTExNSAtMjhsLTQ2IC0yNzFsLTIwNSAyMjZxLTE5IC0xNSAtNDMgLTI4LjV0LTU1IC0yNi41bDIxOSAtMjQydi0yNzZxMCAtMjAgLTUuNSAtNjB0LTEwLjUgLTc5dC01IC01OHEwIC00MCAzMCAtNTMuNXQxMDQgLTEzLjV6TTEyNjIgNjE2cS0xMTkgMCAtMjI5LjUgMzQuNXQtMTkzLjUgOTYuNWw0OCA2NCBxNzMgLTU1IDE3MC41IC04NXQyMDQuNSAtMzBxMTM3IDAgMjQ5IDQ1LjV0MTc5IDEyMXQ2NyAxNjUuNWg4MHEwIC0xMTQgLTc3LjUgLTIwNy41dC0yMDggLTE0OXQtMjg5LjUgLTU1LjV6TTgwMyA1OTVxODAgMCAxNDkgMjkuNXQxMDggNzIuNWwyMjEgLTY3bDMwOSA4NnE0NyAtMzIgMTA0LjUgLTUwdDExNy41IC0xOHE5MSAwIDE2NSAzOHQxMTguNSAxMDMuNXQ0NC41IDE0Ni41cTAgNzYgLTM0LjUgMTQ5dC05NS41IDEzNHQtMTQzIDk5IHEtMzcgMTA3IC0xMTUuNSAxODMuNXQtMTg2IDExNy41dC0yMzAuNSA0MXEtMTAzIDAgLTE5Ny41IC0yNnQtMTY5IC03Mi41dC0xMTcuNSAtMTA4dC00MyAtMTMxLjVxMCAtMzQgMTQuNSAtNjIuNXQ0MC41IC01MC41bC01NSAtNTlxLTM0IDI5IC01NCA2NS41dC0yNSA4MS41cS04MSAtMTggLTE0NSAtNzB0LTEwMSAtMTI1LjV0LTM3IC0xNTguNXEwIC0xMDIgNDguNSAtMTgwLjV0MTI5LjUgLTEyM3QxNzkgLTQ0LjV6Ii8+PC9zdmc+)](https://autofix.ci)
+[![autofix enabled](https://shields.io/badge/autofix.ci-yes-success?logo=autofix-ci)](https://autofix.ci)
+[![ruff](https://img.shields.io/badge/ruff-enabled-7b0cff?logo=ruff)](https://github.com/charliermarsh/ruff)
+[![PyPI version](https://img.shields.io/pypi/v/colabsh.svg)](https://pypi.org/project/colabsh/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/colabsh.svg)](https://pypistats.org/packages/colabsh)
+[![Python versions](https://img.shields.io/pypi/pyversions/colabsh.svg)](https://pypi.org/project/colabsh/)
+[![coverage](https://codecov.io/gh/onuralpszr/colabsh/branch/main/graph/badge.svg)](https://codecov.io/gh/onuralpszr/colabsh)
+[![mypy](https://img.shields.io/badge/mypy-passing-brightgreen?logo=mypy)](https://github.com/onuralpszr/colabsh/actions)
+
+[![CI](https://img.shields.io/github/actions/workflow/status/onuralpszr/colabsh/ci.yml?branch=main)](https://github.com/onuralpszr/colabsh/actions)
+[![Release](https://img.shields.io/github/v/release/onuralpszr/colabsh)](https://github.com/onuralpszr/colabsh/releases)
+[![Dependabot Updates](https://github.com/onuralpszr/colabsh/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/onuralpszr/colabsh/actions/workflows/dependabot/dependabot-updates)
+
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![stars](https://img.shields.io/github/stars/onuralpszr/colabsh?style=social)](https://github.com/onuralpszr/colabsh/stargazers)
+[![forks](https://img.shields.io/github/forks/onuralpszr/colabsh?style=social)](https://github.com/onuralpszr/colabsh/network/members)
+[![issues](https://img.shields.io/github/issues/onuralpszr/colabsh)](https://github.com/onuralpszr/colabsh/issues)
+[![contributors](https://img.shields.io/github/contributors/onuralpszr/colabsh)](https://github.com/onuralpszr/colabsh/graphs/contributors)
 
 A CLI tool for Google Colab. Execute code, download notebooks, and interact with
-Google Colab from the terminal.
-
-Connects to Google Colab through your browser via WebSocket no API keys needed.
+Google Colab from the terminal. Connects to Google Colab through your browser
+via WebSocket no API keys needed.
 
 ## Installation
 
@@ -23,7 +38,7 @@ uvx colabsh exec "print('hello')"
 From source:
 
 ```bash
-git clone https://github.com/osezer/colabsh.git
+git clone https://github.com/onuralpszr/colabsh.git
 cd colabsh
 uv sync
 ```
@@ -242,3 +257,14 @@ src/colabsh/
 ## License
 
 Apache-2.0
+
+## Inspiration
+
+Inspired by https://github.com/googlecolab/colab-mcp-proxy but with a focus on
+CLI usability, persistent server, and local history.
+
+## Disclaimer
+
+This project has no affiliation with Google. It reverse-engineers Google Colab's
+frontend protocol to enable terminal access. Use responsibly and in accordance
+with Google's terms of service.
