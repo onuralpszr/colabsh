@@ -24,7 +24,9 @@
 
 </div>
 
-A CLI tool for Google Colab. Execute code, download notebooks, and interact with Google Colab from the terminal. Connects to Google Colab through your browser via WebSocket — no API keys needed.
+A CLI tool for Google Colab. Execute code, download notebooks, and interact with
+Google Colab from the terminal. Connects to Google Colab through your browser
+via WebSocket — no API keys needed.
 
 ---
 
@@ -45,11 +47,11 @@ A CLI tool for Google Colab. Execute code, download notebooks, and interact with
 
 ## Installation
 
-| Method | Command |
-| --- | --- |
-| **pip** | `pip install colabsh` |
-| **uvx** (no install) | `uvx colabsh exec "print('hello')"` |
-| **From source** | `git clone https://github.com/onuralpszr/colabsh.git && cd colabsh && uv sync` |
+| Method               | Command                                                                        |
+| -------------------- | ------------------------------------------------------------------------------ |
+| **pip**              | `pip install colabsh`                                                          |
+| **uvx** (no install) | `uvx colabsh exec "print('hello')"`                                            |
+| **From source**      | `git clone https://github.com/onuralpszr/colabsh.git && cd colabsh && uv sync` |
 
 ## Quick Start
 
@@ -94,62 +96,64 @@ colabsh stop ───────────────▶ shuts down
 
 ### Server
 
-| Command | Description |
-| --- | --- |
-| `colabsh start` | Start server and open browser |
-| `colabsh start --headless` | Print URL instead of opening browser |
-| `colabsh start --qr` | Print QR code + URL for easy copy-paste |
-| `colabsh stop` | Stop the background server |
-| `colabsh status` | Check connection state |
+| Command                    | Description                             |
+| -------------------------- | --------------------------------------- |
+| `colabsh start`            | Start server and open browser           |
+| `colabsh start --headless` | Print URL instead of opening browser    |
+| `colabsh start --qr`       | Print QR code + URL for easy copy-paste |
+| `colabsh stop`             | Stop the background server              |
+| `colabsh status`           | Check connection state                  |
 
 ### Execute
 
-| Command | Description |
-| --- | --- |
-| `colabsh exec "code"` | Execute inline code |
-| `colabsh exec -f script.py` | Execute a file |
-| `echo "code" \| colabsh exec -` | Execute from stdin |
-| `colabsh repl` | Interactive REPL |
+| Command                         | Description         |
+| ------------------------------- | ------------------- |
+| `colabsh exec "code"`           | Execute inline code |
+| `colabsh exec -f script.py`     | Execute a file      |
+| `echo "code" \| colabsh exec -` | Execute from stdin  |
+| `colabsh repl`                  | Interactive REPL    |
 
 ### REPL Features
 
-| Feature | Details |
-| --- | --- |
-| Arrow keys | Navigate previous commands (readline history) |
-| Persistent history | Saved across sessions |
-| Multiline input | Lines ending with `:` or `\` start a block (end with empty line) |
-| Commands | `/quit`, `/tools`, `/cells` |
+| Feature            | Details                                                          |
+| ------------------ | ---------------------------------------------------------------- |
+| Arrow keys         | Navigate previous commands (readline history)                    |
+| Persistent history | Saved across sessions                                            |
+| Multiline input    | Lines ending with `:` or `\` start a block (end with empty line) |
+| Commands           | `/quit`, `/tools`, `/cells`                                      |
 
 ### Download
 
-| Command | Description |
-| --- | --- |
-| `colabsh download notebook.ipynb` | Download as Jupyter notebook |
-| `colabsh download script.py` | Download as Python script |
+| Command                                        | Description                               |
+| ---------------------------------------------- | ----------------------------------------- |
+| `colabsh download notebook.ipynb`              | Download as Jupyter notebook              |
+| `colabsh download script.py`                   | Download as Python script                 |
 | `colabsh download output.ipynb -f analysis.py` | Execute first, then download with results |
 
 ### Other
 
-| Command | Description |
-| --- | --- |
-| `colabsh tools` | List available Google Colab frontend tools |
-| `colabsh history list` | Show tracked sessions |
-| `colabsh history show <id>` | Show detailed history for a notebook |
-| `colabsh history clear` | Delete all local history |
-| `colabsh history toggle [on\|off]` | Enable/disable local history tracking |
-| `colabsh history path` | Show history file path |
-| `colabsh --json <command>` | JSON output for scripting/LLM tools |
-| `colabsh -v <command>` | Enable debug logging |
+| Command                            | Description                                |
+| ---------------------------------- | ------------------------------------------ |
+| `colabsh tools`                    | List available Google Colab frontend tools |
+| `colabsh history list`             | Show tracked sessions                      |
+| `colabsh history show <id>`        | Show detailed history for a notebook       |
+| `colabsh history clear`            | Delete all local history                   |
+| `colabsh history toggle [on\|off]` | Enable/disable local history tracking      |
+| `colabsh history path`             | Show history file path                     |
+| `colabsh --json <command>`         | JSON output for scripting/LLM tools        |
+| `colabsh -v <command>`             | Enable debug logging                       |
 
 ## Headless Mode
 
-For SSH sessions, containers, or remote machines where there's no desktop browser:
+For SSH sessions, containers, or remote machines where there's no desktop
+browser:
 
 ```bash
 colabsh start --headless
 ```
 
-This prints the connection URL instead of opening a browser. Open the URL on the same machine in any browser.
+This prints the connection URL instead of opening a browser. Open the URL on the
+same machine in any browser.
 
 ### SSH Port Forwarding
 
@@ -170,7 +174,12 @@ ssh -L 45123:localhost:45123 remote-server
 colabsh exec "print('running on remote')"
 ```
 
-> **Why not LAN/phone access?** Google Colab's frontend JavaScript **always connects WebSocket to `localhost`** — this is hardcoded in Google's code. When you open the URL on a different device, the browser tries to connect to `localhost` on *that* device, which doesn't have the colabsh server. The only workaround is **SSH port forwarding**, which makes the remote port appear as `localhost` on your local machine.
+> **Why not LAN/phone access?** Google Colab's frontend JavaScript **always
+> connects WebSocket to `localhost`** — this is hardcoded in Google's code. When
+> you open the URL on a different device, the browser tries to connect to
+> `localhost` on _that_ device, which doesn't have the colabsh server. The only
+> workaround is **SSH port forwarding**, which makes the remote port appear as
+> `localhost` on your local machine.
 
 ## Security
 
@@ -186,36 +195,37 @@ colabsh exec "print('running on remote')"
 - The connection URL contains a secret token — treat it like a password
 - Anyone with the URL can execute code in your Colab session
 - The background server runs until you stop it (`colabsh stop`)
-- Code execution happens on Google's Colab VMs, subject to Google's terms of service
+- Code execution happens on Google's Colab VMs, subject to Google's terms of
+  service
 - The Google Colab session has your Google account's permissions
 
 ### Token lifecycle
 
-| Event | Behavior |
-| --- | --- |
-| `colabsh start` | A new random token is generated |
-| While running | Token stored in `~/.config/colabsh/server.json` (user-readable only) |
-| `colabsh stop` | Token is deleted |
+| Event           | Behavior                                                             |
+| --------------- | -------------------------------------------------------------------- |
+| `colabsh start` | A new random token is generated                                      |
+| While running   | Token stored in `~/.config/colabsh/server.json` (user-readable only) |
+| `colabsh stop`  | Token is deleted                                                     |
 
 ## Configuration
 
 ### Config directory
 
-| Platform | Path |
-| --- | --- |
-| Linux | `~/.config/colabsh/` |
-| macOS | `~/Library/Application Support/colabsh/` |
-| Windows | `C:\Users\<user>\AppData\Roaming\colabsh\` |
+| Platform | Path                                       |
+| -------- | ------------------------------------------ |
+| Linux    | `~/.config/colabsh/`                       |
+| macOS    | `~/Library/Application Support/colabsh/`   |
+| Windows  | `C:\Users\<user>\AppData\Roaming\colabsh\` |
 
 ### Config files
 
-| File | Description |
-| --- | --- |
-| `server.json` | Running server state (port, PID, token) |
-| `server.log` | Server logs |
-| `settings.json` | User preferences (headless mode, etc.) |
-| `history.json` | Local usage history |
-| `repl_history` | Readline command history |
+| File            | Description                             |
+| --------------- | --------------------------------------- |
+| `server.json`   | Running server state (port, PID, token) |
+| `server.log`    | Server logs                             |
+| `settings.json` | User preferences (headless mode, etc.)  |
+| `history.json`  | Local usage history                     |
+| `repl_history`  | Readline command history                |
 
 ### Output format
 
@@ -235,13 +245,13 @@ Use `--json` when piping to other tools or LLMs.
 
 ## Development
 
-| Task | Command |
-| --- | --- |
-| Install dependencies | `uv sync` |
-| Run tests | `uv run pytest` |
-| Lint | `uv run ruff check src/ tests/` |
-| Format | `uv run ruff format src/ tests/` |
-| Type check | `uv run mypy src/colabsh/` |
+| Task                 | Command                          |
+| -------------------- | -------------------------------- |
+| Install dependencies | `uv sync`                        |
+| Run tests            | `uv run pytest`                  |
+| Lint                 | `uv run ruff check src/ tests/`  |
+| Format               | `uv run ruff format src/ tests/` |
+| Type check           | `uv run mypy src/colabsh/`       |
 
 ## Architecture
 
@@ -266,8 +276,11 @@ Apache-2.0
 
 ## Inspiration
 
-Inspired by [colab-mcp-proxy](https://github.com/googlecolab/colab-mcp-proxy) but with a focus on CLI usability, persistent server, and local history.
+Inspired by [colab-mcp-proxy](https://github.com/googlecolab/colab-mcp-proxy)
+but with a focus on CLI usability, persistent server, and local history.
 
 ## Disclaimer
 
-This project has no affiliation with Google. It reverse-engineers Google Colab's frontend protocol to enable terminal access. Use responsibly and in accordance with Google's terms of service.
+This project has no affiliation with Google. It reverse-engineers Google Colab's
+frontend protocol to enable terminal access. Use responsibly and in accordance
+with Google's terms of service.
