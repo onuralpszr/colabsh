@@ -16,7 +16,6 @@ from colabsh.constants import (
     CONNECTION_URL_FILE,
     CONTROL_HOST,
     CONTROL_READ_TIMEOUT,
-    CONTROL_RECV_BUFFER,
     CONTROL_SOCKET_TIMEOUT,
     RECONNECT_TIMEOUT,
     SERVER_POLL_INTERVAL,
@@ -36,12 +35,22 @@ from colabsh.core.proxy import ColabProxy
 class ControlServer:
     """TCP server that accepts CLI commands and routes them to ColabProxy."""
 
-    def __init__(self, proxy: ColabProxy, *, headless: bool = False) -> None:
+    def __init__(self, proxy: ColabProxy, *, headless: bool = False, auto: bool = False) -> None:
         self.proxy = proxy
         self.headless = headless
+        self.auto = auto
         self.port = 0
         self._server: asyncio.Server | None = None
         self._lock = asyncio.Lock()
+        self._handlers: dict[str, Any] = {
+            "ping": self._handle_ping,
+            "exec": self._handle_exec,
+            "list_tools": self._handle_list_tools,
+            "get_cells": self._handle_get_cells,
+            "call_tool": self._handle_call_tool,
+            "reconnect": self._handle_reconnect,
+            "shutdown": self._handle_shutdown,
+        }
 
     async def start(self) -> None:
         self._server = await asyncio.start_server(self._handle_client, host=CONTROL_HOST, port=0)
@@ -75,17 +84,7 @@ class ControlServer:
             await writer.wait_closed()
 
     async def _dispatch(self, action: str, args: dict[str, Any]) -> dict[str, Any]:
-        handlers: dict[str, Any] = {
-            "ping": self._handle_ping,
-            "exec": self._handle_exec,
-            "list_tools": self._handle_list_tools,
-            "get_cells": self._handle_get_cells,
-            "call_tool": self._handle_call_tool,
-            "reconnect": self._handle_reconnect,
-            "shutdown": self._handle_shutdown,
-        }
-
-        handler = handlers.get(action)
+        handler = self._handlers.get(action)
         if not handler:
             return {"ok": False, "error": f"Unknown action: {action}"}
 
@@ -101,8 +100,6 @@ class ControlServer:
     async def _handle_exec(self, args: dict[str, Any]) -> dict[str, Any]:
         if not self.proxy.is_connected:
             raise RuntimeError("Not connected to Colab. Open browser and connect.")
-
-        import contextlib
 
         code = args.get("code", "")
         if not code:
@@ -143,8 +140,21 @@ class ControlServer:
         return await self.proxy.call_tool(name, arguments)
 
     async def _handle_reconnect(self, args: dict[str, Any]) -> dict[str, Any]:
-        """Reconnect to Colab. In headless mode, returns URL instead of opening browser."""
+        """Reconnect to Colab. Uses Playwright in auto mode, URL in headless, browser otherwise."""
         url = self.proxy.get_connection_url()
+        if self.auto:
+            from colabsh.core.browser import auto_connect
+
+            logging.info("Auto-reconnecting via Playwright: %s", url)
+            try:
+                page = await auto_connect(url, headless=True)
+                # Store page reference on the parent server to prevent GC
+                self._auto_page = page
+                connected = await self.proxy.wait_for_connection(timeout=RECONNECT_TIMEOUT)
+                return {"connected": connected, "headless": False, "auto": True}
+            except Exception as e:
+                logging.error("Auto-reconnect failed: %s", e)
+                return {"url": url, "connected": False, "headless": True, "auto": True}
         if self.headless:
             logging.info("Reconnect requested (headless) URL: %s", url)
             return {"url": url, "connected": False, "headless": True}
@@ -168,10 +178,21 @@ class ControlServer:
 class BackgroundServer:
     """Orchestrates the WebSocket proxy and TCP control server."""
 
-    def __init__(self, *, headless: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        headless: bool = False,
+        auto: bool = False,
+        show_browser: bool = False,
+        browser_profile: str | None = None,
+    ) -> None:
         self.proxy = ColabProxy()
-        self.control = ControlServer(self.proxy, headless=headless)
+        self.control = ControlServer(self.proxy, headless=headless, auto=auto)
         self.headless = headless
+        self.auto = auto
+        self.show_browser = show_browser
+        self.browser_profile = browser_profile
+        self._browser_page: object | None = None
 
     async def run(self) -> None:
         """Start both servers, write state file, open browser, run forever."""
@@ -180,11 +201,27 @@ class BackgroundServer:
 
         self._write_state()
 
-        if self.headless:
+        if self.auto:
+            from colabsh.core.browser import auto_connect
+
             url = self.proxy.get_connection_url()
-            logging.info("Headless mode open this URL in a browser to connect:")
+            browser_headless = not self.show_browser
+            mode = "visible" if self.show_browser else "headless"
+            logging.info("Auto mode (%s): navigating to %s", mode, url)
+            try:
+                self._browser_page = await auto_connect(
+                    url, headless=browser_headless, user_data_dir=self.browser_profile
+                )
+            except Exception as e:
+                logging.error("Auto-connect failed: %s", e)
+                # Fall back to headless mode - write URL for manual connection
+                url_path = SERVER_STATE_PATH.parent / CONNECTION_URL_FILE
+                url_path.write_text(url)
+                logging.info("Falling back to headless mode. Open the URL manually.")
+        elif self.headless:
+            url = self.proxy.get_connection_url()
+            logging.info("Headless mode, open this URL in a browser to connect:")
             logging.info(url)
-            # Write URL to a separate file for the CLI to read
             url_path = SERVER_STATE_PATH.parent / CONNECTION_URL_FILE
             url_path.write_text(url)
         else:
@@ -219,6 +256,11 @@ class BackgroundServer:
 
     async def _cleanup(self) -> None:
         logging.info("Shutting down...")
+        if self._browser_page is not None:
+            from colabsh.core.browser import close_page
+
+            await close_page(self._browser_page)
+            self._browser_page = None
         await self.control.stop()
         await self.proxy.stop()
         if SERVER_STATE_PATH.exists():
@@ -273,21 +315,21 @@ def send_control(
     ) as sock:
         sock.settimeout(CONTROL_SOCKET_TIMEOUT)
         sock.sendall((json.dumps(request) + "\n").encode())
-        data = b""
-        while True:
-            chunk = sock.recv(CONTROL_RECV_BUFFER)
-            if not chunk:
-                break
-            data += chunk
+        response = json.loads(sock.makefile().readline())
 
-    response = json.loads(data.decode())
     if not response.get("ok"):
         raise RuntimeError(response.get("error", "Unknown server error"))
     res: dict[str, Any] = response.get("result", {})
     return res
 
 
-def start_server(*, headless: bool = False) -> dict[str, Any] | None:
+def start_server(
+    *,
+    headless: bool = False,
+    auto: bool = False,
+    show_browser: bool = False,
+    browser_profile: str | None = None,
+) -> dict[str, Any] | None:
     """Start the background server as a subprocess. Returns state dict or None."""
     if is_server_running():
         return read_server_state()
@@ -295,17 +337,33 @@ def start_server(*, headless: bool = False) -> dict[str, Any] | None:
     ensure_config_dir()
 
     cmd = [sys.executable, "-m", "colabsh.core.server"]
+    if auto:
+        cmd.append("--auto")
+        headless = True
+    if show_browser:
+        cmd.append("--show-browser")
+    if browser_profile:
+        cmd.extend(["--browser-profile", browser_profile])
     if headless:
         cmd.append("--headless")
 
     log_file = open(SERVER_LOG_PATH, "a")  # noqa: SIM115
-    subprocess.Popen(
-        cmd,
-        start_new_session=True,
-        stdin=subprocess.DEVNULL,
-        stdout=log_file,
-        stderr=subprocess.STDOUT,
-    )
+    if show_browser:
+        # Keep display access for visible Chromium window
+        subprocess.Popen(
+            cmd,
+            stdin=subprocess.DEVNULL,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+        )
+    else:
+        subprocess.Popen(
+            cmd,
+            start_new_session=True,
+            stdin=subprocess.DEVNULL,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+        )
 
     # Poll for state file
     start_time = time.monotonic()
@@ -352,6 +410,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--headless", action="store_true", default=False)
+    parser.add_argument("--auto", action="store_true", default=False)
+    parser.add_argument("--show-browser", action="store_true", default=False)
+    parser.add_argument("--browser-profile", default=None)
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -360,7 +421,12 @@ if __name__ == "__main__":
     )
 
     async def _main() -> None:
-        server = BackgroundServer(headless=args.headless)
+        server = BackgroundServer(
+            headless=args.headless,
+            auto=args.auto,
+            show_browser=args.show_browser,
+            browser_profile=args.browser_profile,
+        )
         await server.run()
 
     with contextlib.suppress(KeyboardInterrupt):
