@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/onuralpszr/colabsh/ci.yml?branch=main)](https://github.com/onuralpszr/colabsh/actions)
-[![coverage](https://codecov.io/gh/onuralpszr/colabsh/branch/main/graph/badge.svg)](https://codecov.io/gh/onuralpszr/colabsh)
+[![coverage](https://codecov.io/gh/onuralpszr/colabsh/graph/badge.svg)](https://codecov.io/gh/onuralpszr/colabsh)
 [![Release](https://img.shields.io/github/v/release/onuralpszr/colabsh)](https://github.com/onuralpszr/colabsh/releases)
 [![Dependabot Updates](https://github.com/onuralpszr/colabsh/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/onuralpszr/colabsh/actions/workflows/dependabot/dependabot-updates)
 
