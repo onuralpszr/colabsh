@@ -86,7 +86,9 @@ uv run pre-commit run --all-files
 
 ## Commit messages
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/). Changelog generation with [git-cliff](https://git-cliff.org/) depends on this format.
+This project follows
+[Conventional Commits](https://www.conventionalcommits.org/). Changelog
+generation with [git-cliff](https://git-cliff.org/) depends on this format.
 
 !!! info "Format"
 
@@ -135,4 +137,5 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [Apache License 2.0](https://github.com/onuralpszr/colabsh/blob/main/LICENSE).
+By contributing, you agree that your contributions will be licensed under the
+[Apache License 2.0](https://github.com/onuralpszr/colabsh/blob/main/LICENSE).

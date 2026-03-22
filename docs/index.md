@@ -5,16 +5,22 @@ tags:
 
 # colabsh
 
-A CLI tool for Google Colab. Execute code, download notebooks, and interact with Google Colab from the terminal. Connects to Google Colab through your browser via WebSocket — no API keys needed.
+A CLI tool for Google Colab. Execute code, download notebooks, and interact with
+Google Colab from the terminal. Connects to Google Colab through your browser
+via WebSocket — no API keys needed.
 
 ## Features
 
-- :material-code-braces: **Execute code** — run Python snippets, scripts, or stdin directly on Colab
-- :material-console: **Interactive REPL** — readline history, multiline input, persistent sessions
-- :material-download: **Download notebooks** — export as `.ipynb` or `.py` with execution results
+- :material-code-braces: **Execute code** — run Python snippets, scripts, or
+  stdin directly on Colab
+- :material-console: **Interactive REPL** — readline history, multiline input,
+  persistent sessions
+- :material-download: **Download notebooks** — export as `.ipynb` or `.py` with
+  execution results
 - :material-server: **Persistent server** — one browser tab serves all commands
 - :material-monitor: **Headless mode** — works over SSH with port forwarding
-- :material-history: **Local history** — track notebook sessions and access patterns
+- :material-history: **Local history** — track notebook sessions and access
+  patterns
 - :material-code-json: **JSON output** — pipe results to other tools or LLMs
 
 ## Quick start

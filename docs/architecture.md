@@ -18,7 +18,9 @@ Terminal Client         Background Server              Google Colab Browser
   colabsh stop    ───▶ Shutdown gracefully
 ```
 
-colabsh uses a client-server architecture where a persistent background server maintains the WebSocket connection to Google Colab, and CLI commands communicate with it over TCP.
+colabsh uses a client-server architecture where a persistent background server
+maintains the WebSocket connection to Google Colab, and CLI commands communicate
+with it over TCP.
 
 ## Project structure
 
@@ -86,7 +88,8 @@ colabsh uses a client-server architecture where a persistent background server m
 
 ## Protocol
 
-colabsh communicates with Google Colab using the **MCP proxy protocol** over WebSocket:
+colabsh communicates with Google Colab using the **MCP proxy protocol** over
+WebSocket:
 
 1. Colab's frontend JavaScript connects to the local WebSocket server
 2. colabsh performs the MCP initialize handshake

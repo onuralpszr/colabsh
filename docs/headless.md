@@ -7,7 +7,8 @@ tags:
 
 # Headless mode
 
-For SSH sessions, containers, or remote machines where there's no desktop browser.
+For SSH sessions, containers, or remote machines where there's no desktop
+browser.
 
 ## Usage
 
@@ -15,7 +16,8 @@ For SSH sessions, containers, or remote machines where there's no desktop browse
 colabsh start --headless
 ```
 
-This prints the connection URL instead of opening a browser. Open the URL on the same machine in any browser.
+This prints the connection URL instead of opening a browser. Open the URL on the
+same machine in any browser.
 
 ## SSH port forwarding
 
