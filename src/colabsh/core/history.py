@@ -38,7 +38,18 @@ def record_notebook_event(
     accelerator: str | None = None,
     endpoint: str | None = None,
 ) -> None:
-    """Record an event for a notebook. Does nothing if history is disabled."""
+    """Record an event for a notebook. Does nothing if history is disabled.
+
+    Args:
+        notebook_id: The notebook identifier.
+        event: Event type (e.g. `"exec"`, `"repl"`, `"download"`, `"vm_assign"`).
+        variant: Optional runtime variant (e.g. `"GPU"`).
+        accelerator: Optional accelerator type (e.g. `"T4"`).
+        endpoint: Optional endpoint identifier.
+
+    !!! tip
+        History tracking can be toggled with `colabsh history toggle on|off`.
+    """
     if not is_history_enabled():
         return
 
@@ -77,14 +88,25 @@ def get_history() -> dict[str, Any]:
 
 
 def get_notebook_history(notebook_id: str) -> dict[str, Any] | None:
-    """Return history for a specific notebook."""
+    """Return history for a specific notebook.
+
+    Args:
+        notebook_id: The notebook identifier.
+
+    Returns:
+        The history entry dict, or `None` if not found.
+    """
     data = _load_history()
     result: dict[str, Any] | None = data.get("notebooks", {}).get(notebook_id)
     return result
 
 
 def clear_history() -> bool:
-    """Delete the history file."""
+    """Delete the history file.
+
+    Returns:
+        `True` if the file was deleted, `False` if it didn't exist.
+    """
     if HISTORY_PATH.exists():
         HISTORY_PATH.unlink()
         return True

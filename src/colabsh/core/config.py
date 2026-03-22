@@ -2,7 +2,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Platform-specific configuration management."""
+"""Platform-specific configuration management.
+
+Handles config directory paths, settings persistence, and
+platform detection for Linux, macOS, and Windows.
+
+!!! info "Config locations"
+    | Platform | Path |
+    | -------- | ---- |
+    | Linux    | `~/.config/colabsh/` |
+    | macOS    | `~/Library/Application Support/colabsh/` |
+    | Windows  | `C:\\Users\\<user>\\AppData\\Roaming\\colabsh\\` |
+"""
 
 import json
 from pathlib import Path

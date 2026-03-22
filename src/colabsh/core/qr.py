@@ -2,13 +2,24 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""QR code generation for terminal display."""
+"""QR code generation for terminal display.
+
+!!! note "Optional dependency"
+    Requires the `qrcode` package. Install with `pip install colabsh[qr]`.
+"""
 
 from colabsh.constants import QR_BLOCK_CHAR, QR_BORDER, QR_BOX_SIZE, QR_SPACE_CHAR, QR_VERSION
 
 
 def render_qr(url: str) -> str | None:
-    """Render a QR code as ASCII art. Returns None if qrcode is not installed."""
+    """Render a QR code as ASCII art.
+
+    Args:
+        url: The URL to encode.
+
+    Returns:
+        The QR code as a multi-line string, or `None` if `qrcode` is not installed.
+    """
     try:
         import qrcode  # type: ignore[import-untyped]
     except ImportError:
