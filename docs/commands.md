@@ -75,16 +75,35 @@ Start the background server and connect to Google Colab.
 
 !!! example "Examples"
 
-    ```bash
-    colabsh start              # Open browser
-    colabsh start --headless   # Print URL instead of opening browser
-    colabsh start --qr         # Print QR code + URL (implies --headless)
-    ```
+    === "Browser"
 
-| Option       | Description                                          |
-| ------------ | ---------------------------------------------------- |
-| `--headless` | Don't open browser, print the connection URL instead |
-| `--qr`       | Show QR code for the connection URL                  |
+        ```bash
+        colabsh start
+        ```
+
+    === "Auto (Playwright)"
+
+        ```bash
+        colabsh start --auto
+        colabsh start --auto --gpu t4
+        colabsh start --auto --show-browser
+        ```
+
+    === "Headless"
+
+        ```bash
+        colabsh start --headless
+        colabsh start --qr
+        ```
+
+| Option             | Description                                          |
+| ------------------ | ---------------------------------------------------- |
+| `--auto`           | Fully headless with Playwright (no manual browser)   |
+| `--gpu <type>`     | Select GPU on start (requires `--auto`)              |
+| `--show-browser`   | Show the browser window when using `--auto`          |
+| `--headless`       | Don't open browser, print the connection URL instead |
+| `--qr`             | Show QR code for the connection URL                  |
+| `--browser-profile`| Path to an existing browser profile directory        |
 
 ### `colabsh stop`
 
@@ -100,21 +119,35 @@ Check if the background server is running and connected.
 
 !!! example "Examples"
 
-    === "Human-readable"
+    === "Basic"
 
         ```bash
         colabsh status
         # status: running
         # connected: true
-        # pid: 12345
+        # connection_state: connected
+        # connected_for_seconds: 42
+        ```
+
+    === "Health check"
+
+        ```bash
+        colabsh status --health
+        # status: running
+        # connected: true
+        # runtime_type: Tesla T4
+        # runtime_alive: true
         ```
 
     === "JSON"
 
         ```bash
-        colabsh --json status
-        # {"status": "running", "connected": true, "pid": 12345}
+        colabsh --json status --health
         ```
+
+| Option     | Description                                 |
+| ---------- | ------------------------------------------- |
+| `--health` | Run full health check (GPU/CPU, uptime)     |
 
 ## Code execution
 
@@ -199,6 +232,47 @@ Download the current Colab notebook.
 | ------------------- | ------------------------------------------------------------- |
 | `--format`          | Output format: `py` or `ipynb` (auto-detected from extension) |
 | `-f`, `--exec-file` | Execute a Python file before downloading                      |
+
+## GPU
+
+### `colabsh gpu`
+
+Change the Colab runtime GPU type on the fly. Requires the server to be running in `--auto` mode.
+
+!!! example "Examples"
+
+    ```bash
+    colabsh gpu t4       # Switch to T4 GPU
+    colabsh gpu a100     # Switch to A100 GPU
+    colabsh gpu cpu      # Switch back to CPU
+    ```
+
+| Type   | Description |
+| ------ | ----------- |
+| `cpu`  | No GPU      |
+| `t4`   | T4 GPU      |
+| `v100` | V100 GPU    |
+| `a100` | A100 GPU    |
+| `l4`   | L4 GPU      |
+| `tpu`  | TPU v2      |
+
+!!! warning
+
+    Changing GPU restarts the Colab runtime. Any variables or state in the notebook will be lost. The connection is re-established automatically.
+
+## Authentication
+
+### `colabsh login`
+
+Sign in to Google for auto mode. Opens a visible browser window. The session is saved to the browser profile so `--auto` can reuse it.
+
+```bash
+colabsh login
+```
+
+!!! tip
+
+    You only need to run `colabsh login` once. The session persists in `~/.config/colabsh/browser-profile/` until Google expires it.
 
 ## Other
 

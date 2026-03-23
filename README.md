@@ -42,10 +42,12 @@
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [How It Works](#how-it-works)
+- [Auto Mode (Playwright)](#auto-mode-playwright)
 - [Commands](#commands)
 - [Headless Mode](#headless-mode)
 - [Security](#security)
 - [Configuration](#configuration)
+- [Docker](#docker)
 - [Development](#development)
 - [Architecture](#architecture)
 - [License](#license)
@@ -99,17 +101,70 @@ colabsh stop ----------------> shuts down
 4. **One browser tab** serves all commands, no new tabs per command
 5. The server auto-starts if you run `exec`/`repl` without starting first
 
+## Auto Mode (Playwright)
+
+For fully headless operation with no manual browser interaction. Playwright
+controls a real Chrome browser to connect to Colab automatically.
+
+### Setup
+
+```bash
+pip install colabsh[auto]
+playwright install chromium
+
+# Login once (opens a visible browser)
+colabsh login
+
+# Then use auto mode
+colabsh start --auto
+```
+
+### GPU selection
+
+```bash
+# Select GPU on start
+colabsh start --auto --gpu t4
+
+# Change GPU while running
+colabsh gpu t4
+colabsh gpu a100
+colabsh gpu cpu
+```
+
+Available GPU types: `cpu`, `t4`, `a100`, `v100`, `l4`, `tpu`
+
+### Health check
+
+```bash
+colabsh status --health
+```
+
+Shows runtime type (CPU/GPU), whether the runtime is alive, and connection state.
+
+### Debugging
+
+```bash
+# Show the browser window
+colabsh start --auto --show-browser
+
+# Check server log
+cat ~/.config/colabsh/server.log
+```
+
 ## Commands
 
 ### Server
 
-| Command                    | Description                             |
-| -------------------------- | --------------------------------------- |
-| `colabsh start`            | Start server and open browser           |
-| `colabsh start --headless` | Print URL instead of opening browser    |
-| `colabsh start --qr`       | Print QR code + URL for easy copy-paste |
-| `colabsh stop`             | Stop the background server              |
-| `colabsh status`           | Check connection state                  |
+| Command                    | Description                                |
+| -------------------------- | ------------------------------------------ |
+| `colabsh start`            | Start server and open browser              |
+| `colabsh start --auto`     | Fully headless with Playwright             |
+| `colabsh start --auto --gpu t4` | Auto-connect with T4 GPU              |
+| `colabsh start --headless` | Print URL instead of opening browser       |
+| `colabsh start --qr`       | Print QR code + URL for easy copy-paste    |
+| `colabsh stop`             | Stop the background server                 |
+| `colabsh status`           | Check connection state                     |
+| `colabsh status --health`  | Full health check (GPU/CPU, runtime alive) |
 
 ### Execute
 
@@ -141,6 +196,8 @@ colabsh stop ----------------> shuts down
 
 | Command                            | Description                                |
 | ---------------------------------- | ------------------------------------------ |
+| `colabsh login`                    | Sign in to Google for auto mode            |
+| `colabsh gpu <type>`               | Change GPU on the fly (t4, a100, cpu, ...) |
 | `colabsh tools`                    | List available Google Colab frontend tools |
 | `colabsh history list`             | Show tracked sessions                      |
 | `colabsh history show <id>`        | Show detailed history for a notebook       |
@@ -251,6 +308,22 @@ colabsh --json status
 
 Use `--json` when piping to other tools or LLMs.
 
+## Docker
+
+```bash
+# Build
+docker build -t colabsh .
+
+# Login (interactive, mount profile volume)
+docker run -it -v colabsh-data:/root/.config/colabsh colabsh login
+
+# Run with auto-connect
+docker run -d -v colabsh-data:/root/.config/colabsh colabsh start --auto
+
+# Execute code
+docker exec <container> colabsh exec "print('hello')"
+```
+
 ## Development
 
 | Task                 | Command                          |
@@ -266,12 +339,15 @@ Use `--json` when piping to other tools or LLMs.
 ```
 src/colabsh/
 |-- main.py              # Click CLI entry point
-|-- commands.py          # All commands (exec, repl, start, stop, download, tools)
+|-- commands.py          # All commands (exec, repl, start, stop, gpu, login, ...)
 |-- history.py           # history list/show/clear/toggle
 +-- core/
-    |-- config.py        # Platform config dirs, settings
+    |-- models.py        # Pydantic models (Settings, ServerState, ConnectionInfo)
+    |-- config.py        # Platform config dirs, settings persistence
     |-- server.py        # Background server (WebSocket + TCP control)
     |-- proxy.py         # WebSocket + JSON-RPC to Colab frontend
+    |-- browser.py       # Playwright automation (auto-connect, GPU, login)
+    |-- cells.py         # Shared helpers for notebook cell parsing
     |-- output.py        # JSON/human formatter
     |-- history.py       # Local usage tracking
     |-- repl.py          # Shared REPL with readline

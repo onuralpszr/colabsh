@@ -28,7 +28,10 @@ via WebSocket. No API keys needed.
 - :material-history: **Local history** - track notebook sessions and access
   patterns
 - :material-code-json: **JSON output** - pipe results to other tools or LLMs
+- :material-robot: **Auto mode** - fully headless with Playwright, no manual browser interaction
+- :material-gpu: **GPU selection** - switch between CPU, T4, A100, V100, L4 from the CLI
 - :material-tab: **Shell completion** - tab completion for Bash, Zsh, and Fish
+- :material-docker: **Docker** - containerized operation with persistent browser profile
 
 ## Quick start
 

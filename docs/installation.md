@@ -41,6 +41,26 @@ tags:
 
 ## Optional dependencies
 
+???+ info "Auto mode (Playwright)"
+
+    For fully headless operation with GPU selection:
+
+    === "pip"
+
+        ```bash
+        pip install colabsh[auto]
+        playwright install chromium
+        ```
+
+    === "uv"
+
+        ```bash
+        uv add colabsh[auto]
+        playwright install chromium
+        ```
+
+    Then login once: `colabsh login`
+
 ???+ info "QR code support"
 
     For QR code display in headless mode:
@@ -56,6 +76,13 @@ tags:
         ```bash
         uv add colabsh[qr]
         ```
+
+???+ info "All extras"
+
+    ```bash
+    pip install colabsh[all]
+    playwright install chromium
+    ```
 
 ## Verify installation
 
