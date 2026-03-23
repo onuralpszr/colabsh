@@ -139,7 +139,8 @@ Available GPU types: `cpu`, `t4`, `a100`, `v100`, `l4`, `tpu`
 colabsh status --health
 ```
 
-Shows runtime type (CPU/GPU), whether the runtime is alive, and connection state.
+Shows runtime type (CPU/GPU), whether the runtime is alive, and connection
+state.
 
 ### Debugging
 
@@ -155,16 +156,16 @@ cat ~/.config/colabsh/server.log
 
 ### Server
 
-| Command                    | Description                                |
-| -------------------------- | ------------------------------------------ |
-| `colabsh start`            | Start server and open browser              |
-| `colabsh start --auto`     | Fully headless with Playwright             |
-| `colabsh start --auto --gpu t4` | Auto-connect with T4 GPU              |
-| `colabsh start --headless` | Print URL instead of opening browser       |
-| `colabsh start --qr`       | Print QR code + URL for easy copy-paste    |
-| `colabsh stop`             | Stop the background server                 |
-| `colabsh status`           | Check connection state                     |
-| `colabsh status --health`  | Full health check (GPU/CPU, runtime alive) |
+| Command                         | Description                                |
+| ------------------------------- | ------------------------------------------ |
+| `colabsh start`                 | Start server and open browser              |
+| `colabsh start --auto`          | Fully headless with Playwright             |
+| `colabsh start --auto --gpu t4` | Auto-connect with T4 GPU                   |
+| `colabsh start --headless`      | Print URL instead of opening browser       |
+| `colabsh start --qr`            | Print QR code + URL for easy copy-paste    |
+| `colabsh stop`                  | Stop the background server                 |
+| `colabsh status`                | Check connection state                     |
+| `colabsh status --health`       | Full health check (GPU/CPU, runtime alive) |
 
 ### Execute
 

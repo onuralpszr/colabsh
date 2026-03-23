@@ -96,14 +96,14 @@ Start the background server and connect to Google Colab.
         colabsh start --qr
         ```
 
-| Option             | Description                                          |
-| ------------------ | ---------------------------------------------------- |
-| `--auto`           | Fully headless with Playwright (no manual browser)   |
-| `--gpu <type>`     | Select GPU on start (requires `--auto`)              |
-| `--show-browser`   | Show the browser window when using `--auto`          |
-| `--headless`       | Don't open browser, print the connection URL instead |
-| `--qr`             | Show QR code for the connection URL                  |
-| `--browser-profile`| Path to an existing browser profile directory        |
+| Option              | Description                                          |
+| ------------------- | ---------------------------------------------------- |
+| `--auto`            | Fully headless with Playwright (no manual browser)   |
+| `--gpu <type>`      | Select GPU on start (requires `--auto`)              |
+| `--show-browser`    | Show the browser window when using `--auto`          |
+| `--headless`        | Don't open browser, print the connection URL instead |
+| `--qr`              | Show QR code for the connection URL                  |
+| `--browser-profile` | Path to an existing browser profile directory        |
 
 ### `colabsh stop`
 
@@ -145,9 +145,9 @@ Check if the background server is running and connected.
         colabsh --json status --health
         ```
 
-| Option     | Description                                 |
-| ---------- | ------------------------------------------- |
-| `--health` | Run full health check (GPU/CPU, uptime)     |
+| Option     | Description                             |
+| ---------- | --------------------------------------- |
+| `--health` | Run full health check (GPU/CPU, uptime) |
 
 ## Code execution
 
@@ -237,7 +237,8 @@ Download the current Colab notebook.
 
 ### `colabsh gpu`
 
-Change the Colab runtime GPU type on the fly. Requires the server to be running in `--auto` mode.
+Change the Colab runtime GPU type on the fly. Requires the server to be running
+in `--auto` mode.
 
 !!! example "Examples"
 
@@ -264,7 +265,8 @@ Change the Colab runtime GPU type on the fly. Requires the server to be running 
 
 ### `colabsh login`
 
-Sign in to Google for auto mode. Opens a visible browser window. The session is saved to the browser profile so `--auto` can reuse it.
+Sign in to Google for auto mode. Opens a visible browser window. The session is
+saved to the browser profile so `--auto` can reuse it.
 
 ```bash
 colabsh login
